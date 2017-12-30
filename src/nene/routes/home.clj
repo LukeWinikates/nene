@@ -10,7 +10,9 @@
       [:h1.jp "音々"]]
      [:div.banner-block.teaser
       [:h3.en "Gitaigo & Giongo Explorer"]
-      [:h3.jp "ぎたいご・ぎおんご探険器具"]]]))
+      [:h3.jp "ぎたいご・ぎおんご探険器具"]]]
+    [:section.main
+     [:script "Elm.Main.embed(document.querySelector(\".main\"))"]]))
 
 (defroutes home-routes
            (GET "/" [] (home)))

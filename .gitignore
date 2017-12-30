@@ -11,3 +11,5 @@ pom.xml
 .lein-env
 nene.iml
 .idea/
+elm-stuff/
+resources/public/js/
