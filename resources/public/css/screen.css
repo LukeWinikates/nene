@@ -1,10 +1,18 @@
 body {
     color: #555;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Hiragino Kaku Gothic Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 13px;
 }
 
-h1 {
+.title h1.jp {
+    font-size: 48px;
+}
+
+.title h1 {
+    margin:0;
     text-align: center;
 }
 
+.banner-block {
+    display: inline-block;
+}
