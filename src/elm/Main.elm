@@ -1,6 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, button, div, section, text)
+import Html exposing (Html, article, button, div, em, section, strong, text)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (field)
@@ -74,18 +75,21 @@ wordDecoder =
 
 wordView : Word -> Html Msg
 wordView word =
-    div []
-        [ div [] [ text word.kana ]
-        , div [] [ text word.romaji ]
+    div [ class "pill" ]
+        [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
+        , em [] [ text word.romaji ]
         ]
 
 
 categoryView : Category -> Html Msg
 categoryView category =
-    div []
-        [ div [] [ text category.en ]
-        , div [] [ text category.jp ]
-        , div [] (List.map wordView category.words)
+    article [ class "card" ]
+        [ section [ class "card-label vertical" ]
+            [ div [] [ text category.jp ]
+            , div [] [ text category.en ]
+            ]
+        , section [ class "card-content pill-container" ]
+            (List.map wordView category.words)
         ]
 
 

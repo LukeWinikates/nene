@@ -4,6 +4,10 @@ body {
     font-size: 13px;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 .container {
     max-width: 980px;
     margin: auto;
@@ -20,4 +24,39 @@ body {
 
 .banner-block {
     display: inline-block;
+}
+
+.card {
+    display: flex;
+    flex-direction: row;
+
+    border: 1px solid #555;
+    border-radius: 2px;
+}
+
+.card-label {
+    padding: 20px;
+    font-size: 24px;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: row;
+}
+
+.vertical {
+    writing-mode: vertical-lr;
+}
+
+.pill-container {
+    flex-wrap: wrap;
+}
+
+.pill {
+    border-radius: 5px;
+    border: 1px solid #555;
+    width: 120px;
+    height: 60px;
+    margin: 10px;
+    padding: 10px;
 }
