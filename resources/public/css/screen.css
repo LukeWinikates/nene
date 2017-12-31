@@ -4,6 +4,11 @@ body {
     font-size: 13px;
 }
 
+.container {
+    max-width: 980px;
+    margin: auto;
+}
+
 .title h1.jp {
     font-size: 48px;
 }
