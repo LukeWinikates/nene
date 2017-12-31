@@ -10,7 +10,7 @@ main =
     Html.program
         { view = view
         , update = update
-        , init = ( emptyModel, Http.send CategoryResult (Http.get "/api/gigo" categoriesDecoder) )
+        , init = ( emptyModel, Http.send CategoryFetch (Http.get "/api/gigo" categoriesDecoder) )
         , subscriptions = always Sub.none
         }
 
@@ -29,19 +29,15 @@ emptyModel =
 
 
 type Msg
-    = LoadCategories
-    | CategoryResult (Result Http.Error (List Category))
+    = CategoryFetch (Result Http.Error (List Category))
 
 
 update msg model =
     ( case msg of
-        LoadCategories ->
-            { model | notificationText = Just "loading categories" }
-
-        CategoryResult (Err er) ->
+        CategoryFetch (Err er) ->
             { model | notificationText = Just <| toString er }
 
-        CategoryResult (Ok categories) ->
+        CategoryFetch (Ok categories) ->
             { model | notificationText = Nothing, categories = Just categories }
     , Cmd.none
     )
