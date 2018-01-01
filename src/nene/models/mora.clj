@@ -29,8 +29,11 @@
 
 (defn analyze [{:keys [kana] :as word}]
   (-> word
-      (assoc :first-mora (str (first kana) "_" (first kana) "_"))
-      (assoc :second-morae (str "_" (second-morae kana) "_" (second-morae kana)))
+      (assoc :attributes [
+                          { :label (str (first kana) "_" (first kana) "_") :flavor :first-mora }
+                          { :label (str "_" (second-morae kana) "_" (second-morae kana)) :flavor :second-morae }
+                          ]
+             )
       )
   )
 

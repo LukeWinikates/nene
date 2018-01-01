@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, section, span, strong, text)
+import Html exposing (Html, article, button, div, em, header, section, span, strong, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
@@ -58,6 +58,13 @@ update msg model =
 type alias Word =
     { kana : String
     , romaji : String
+    , attributes : List WordAttribute
+    }
+
+
+type alias WordAttribute =
+    { label : String
+    , flavor : String
     }
 
 
@@ -77,11 +84,19 @@ categoriesDecoder =
             (field "words" (Decode.list wordDecoder))
 
 
+attributeDecoder : Decode.Decoder WordAttribute
+attributeDecoder =
+    Decode.map2 WordAttribute
+        (field "label" Decode.string)
+        (field "flavor" Decode.string)
+
+
 wordDecoder : Decode.Decoder Word
 wordDecoder =
-    Decode.map2 Word
+    Decode.map3 Word
         (field "kana" Decode.string)
         (field "romaji" Decode.string)
+        (field "attributes" (Decode.list attributeDecoder))
 
 
 wordView : Word -> Html Msg
@@ -106,10 +121,23 @@ categoryView category =
 
 wordDetailView : Word -> Html Msg
 wordDetailView word =
-    div [ class "super-rounded" ]
-        [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
-        , span [ onClick (PageChange <| CategoryList) ] [ text "x" ]
-        , em [] [ text word.romaji ]
+    article [ class "super-rounded" ]
+        [ header []
+            [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
+            , em [] [ text word.romaji ]
+            , span [ onClick (PageChange <| CategoryList), style [ ( "float", "right" ) ] ] [ text "x" ]
+            ]
+        , section []
+            (List.map
+                (\attr ->
+                    div []
+                        [ strong [] [ text attr.label ]
+                        , span [] [ text ":" ]
+                        , (text attr.flavor)
+                        ]
+                )
+                word.attributes
+            )
         ]
 
 
