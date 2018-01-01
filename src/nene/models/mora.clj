@@ -1,4 +1,5 @@
-(ns nene.models.mora)
+(ns nene.models.mora
+  (:require [clojure.string :as string]))
 
 (def transliteration
   {
@@ -22,11 +23,22 @@
 (defn transliterate [word]
   (clojure.string/join (map #(get transliteration (str %)) word)))
 
-(defn word-structures [word]
-  (-> word
-      transliterate)
+(defn second-morae [kana]
+  (string/join (rest (take (/ (count kana) 2) kana)))
   )
+
+(defn analyze [{:keys [kana] :as word}]
+  (-> word
+      (assoc :first-mora (str (first kana) "_" (first kana) "_"))
+      (assoc :second-morae (str "_" (second-morae kana) "_" (second-morae kana)))
+      )
+  )
+
+
 
 (def words
   (->> ["ぽつぽつ" "せかせか" "どんどん" "ずたずた" "ばらばら" "がらがら" "がちがち" "ごろんごろん"]
-       (map (fn [word] {:kana word :romaji (transliterate word)}))))
+       (map (fn [word] {:kana word :romaji (transliterate word)}))
+       (map analyze)
+       )
+  )
