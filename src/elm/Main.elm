@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, section, strong, text)
+import Html exposing (Html, article, button, div, em, section, span, strong, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
@@ -16,9 +16,15 @@ main =
         }
 
 
+type Page
+    = CategoryList
+    | WordDetail Word
+
+
 type alias Model =
     { notificationText : Maybe String
     , categories : Maybe (List Category)
+    , page : Page
     }
 
 
@@ -26,11 +32,13 @@ emptyModel : Model
 emptyModel =
     { notificationText = Nothing
     , categories = Nothing
+    , page = CategoryList
     }
 
 
 type Msg
     = CategoryFetch (Result Http.Error (List Category))
+    | PageChange Page
 
 
 update msg model =
@@ -40,6 +48,9 @@ update msg model =
 
         CategoryFetch (Ok categories) ->
             { model | notificationText = Nothing, categories = Just categories }
+
+        PageChange page ->
+            { model | page = page }
     , Cmd.none
     )
 
@@ -75,7 +86,7 @@ wordDecoder =
 
 wordView : Word -> Html Msg
 wordView word =
-    div [ class "pill" ]
+    div [ class "pill", onClick (PageChange <| WordDetail word) ]
         [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
         , em [] [ text word.romaji ]
         ]
@@ -93,9 +104,28 @@ categoryView category =
         ]
 
 
+wordDetailView : Word -> Html Msg
+wordDetailView word =
+    div [ class "super-rounded" ]
+        [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
+        , span [ onClick (PageChange <| CategoryList) ] [ text "x" ]
+        , em [] [ text word.romaji ]
+        ]
+
+
+pageView : Model -> Html Msg
+pageView model =
+    case model.page of
+        CategoryList ->
+            Maybe.map (\categories -> section [] (List.map categoryView categories)) model.categories
+                |> Maybe.withDefault (text "no categories")
+
+        WordDetail word ->
+            wordDetailView word
+
+
 view model =
     div []
         [ div [] [ text <| Maybe.withDefault "" model.notificationText ]
-        , Maybe.map (\categories -> section [] (List.map categoryView categories)) model.categories
-            |> Maybe.withDefault (text "no categories")
+        , pageView (model)
         ]

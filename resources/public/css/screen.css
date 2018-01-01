@@ -75,3 +75,8 @@ body {
     margin: 10px;
     padding: 10px;
 }
+
+.super-rounded {
+    border-radius: 5px;
+    border: 1px solid #555;
+}
