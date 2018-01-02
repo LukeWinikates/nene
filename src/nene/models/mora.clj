@@ -1,6 +1,8 @@
 (ns nene.models.mora
   (:require [clojure.string :as string]))
 
+; todo: switch to a representation of the kana that's laid out like the traditional a/sa/ka/ta chart from the text books
+; todo: move the canonical format into csv rather than having the words in this file.
 (def transliteration
   {
    "ぽ" "po"
