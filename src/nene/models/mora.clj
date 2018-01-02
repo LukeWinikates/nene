@@ -30,18 +30,46 @@
 (defn analyze [{:keys [kana] :as word}]
   (-> word
       (assoc :attributes [
-                          { :label (str (first kana) "_" (first kana) "_") :flavor :first-mora }
-                          { :label (str "_" (second-morae kana) "_" (second-morae kana)) :flavor :second-morae }
+                          {:label (str (first kana) "_" (first kana) "_") :flavor :first-mora}
+                          {:label (str "_" (second-morae kana) "_" (second-morae kana)) :flavor :second-morae}
                           ]
              )
       )
   )
 
-
-
+;todo: support ちゃらちゃら/じゃらじゃら
 (def words
-  (->> ["ぽつぽつ" "せかせか" "どんどん" "ずたずた" "ばらばら" "がらがら" "がちがち" "ごろんごろん"]
+  (->> ["ぽつぽつ" "せかせか" "どんどん" "ずたずた" "ばらばら" "がらがら" "がちがち" "ごろんごろん" "はらはら" "ちらちら" "きらきら"]
        (map (fn [word] {:kana word :romaji (transliterate word)}))
        (map analyze)
        )
+  )
+
+; for each word
+; if it has an attribute matching this one
+; include the word by its kana representation
+
+(defn matches-attribute? [group-kana word]
+  (some
+    (fn [attr] (= (:label attr) group-kana))
+    (:attributes word)
+    )
+  )
+
+(defn words-for-group [group-kana]
+  (filter (partial matches-attribute? group-kana) words)
+  )
+
+(defn find-word-by-romaji [romaji]
+  (first (filter #(= romaji (:romaji %)) words)))
+
+(defn relatives [word]
+  (assoc
+    word
+    :relatives
+    (map (fn [attribute]
+           {:label (:label attribute)
+            :words (map :kana (filter #(not (= word %)) (words-for-group (:label attribute))))
+            }
+           ) (:attributes word)))
   )
