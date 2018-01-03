@@ -5,7 +5,9 @@
                  [compojure "1.5.2"]
                  [hiccup "1.0.5"]
                  [ring/ring-json "0.4.0"]
-                 [ring-server "0.4.0"]]
+                 [ring-server "0.4.0"]
+                 [org.clojure/core.match "0.3.0-alpha5"]
+                 ]
   :plugins [[lein-ring "0.8.12"]]
   :ring {:handler nene.handler/app
          :init nene.handler/init

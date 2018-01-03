@@ -1,5 +1,6 @@
 (ns nene.models.mora
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure.core.match :refer [match]]))
 
 ; todo: switch to a representation of the kana that's laid out like the traditional a/sa/ka/ta chart from the text books
 ; todo: move the canonical format into csv rather than having the words in this file.
@@ -7,13 +8,17 @@
   {
    "ぽ" "po"
    "ば" "ba"
+   "び" "bi"
+   "ぶ" "bu"
    "つ" "tsu"
    "ち" "chi"
    "せ" "se"
    "か" "ka"
+   "き" "ki"
    "が" "ga"
    "ご" "go"
    "ら" "ra"
+   "り" "ri"
    "ろ" "ro"
    "ど" "do"
    "ん" "n"
@@ -22,8 +27,29 @@
    }
   )
 
+(defn transliterate-char [char]
+  (get transliteration (str char)))
+
+;todo: this looks awful
 (defn transliterate [word]
-  (clojure.string/join (map #(get transliteration (str %)) word)))
+  (let [fst (first word)
+        snd (first (rest word))]
+    (match [fst snd]
+           [\っ snd] (let [t (transliterate-char snd)]
+                      (str (transliterate-char fst) (str (first t) t)
+                           (transliterate (str (rest (rest word))))))
+           [\し \ゃ] (str "sha" (transliterate (rest (rest word))))
+           [\し \ゅ] (str "shu" (transliterate (rest (rest word))))
+           [\し \ょ] (str "sho" (transliterate (rest (rest word))))
+           [\じ \ゃ] (str "ja" (transliterate (rest (rest word))))
+           [\じ \ゅ] (str "ju" (transliterate (rest (rest word))))
+           [\じ \ょ] (str "jo" (transliterate (rest (rest word))))
+           [fst \ゃ] (str (first (transliterate-char fst)) "ya" (transliterate (rest (rest word))))
+           [fst \ゅ] (str (first (transliterate-char fst)) "yu" (transliterate (rest (rest word))))
+           [fst \ょ] (str (first (transliterate-char fst)) "yo" (transliterate (rest (rest word))))
+           [nil nil] nil
+           :else (str (transliterate-char fst) (transliterate (rest word))))
+    ))
 
 (defn second-morae [kana]
   (string/join (rest (take (/ (count kana) 2) kana)))
@@ -39,7 +65,6 @@
       )
   )
 
-;todo: support ちゃらちゃら/じゃらじゃら
 (def words
   (->> ["ぽつぽつ" "せかせか" "どんどん" "ずたずた" "ばらばら" "がらがら" "がちがち" "ごろんごろん" "はらはら" "ちらちら" "きらきら"]
        (map (fn [word] {:kana word :romaji (transliterate word)}))
