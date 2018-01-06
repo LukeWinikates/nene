@@ -25,6 +25,9 @@
     )
   )
 
+(def hiragana-vector
+  (vec (apply concat (vals hiragana))))
+
 (defn index-of [coll item]
   (->> (map-indexed vector coll)
        (filter (fn [[_ el]] (= item el)))
@@ -36,42 +39,49 @@
     (case kana
       "ん" "n"
       "っ" nil
-      (let [hiragana-vector (vec (apply concat (vals hiragana)))
-            gyo (int (/ (index-of hiragana-vector kana) 5))
-            keta (mod (index-of hiragana-vector kana) 5)
+      (let [idx (index-of hiragana-vector kana)
+            gyo (int (/ idx 5))
+            keta (mod idx 5)
             naive (str (nth (keys hiragana) gyo) (nth "aiueo" keta))]
-        (case naive
-          "si" "shi"
-          "zi" "ji"
-          "ti" "chi"
-          "di" "ji"
-          "tu" "tsu"
-          "du" "dzu"
-          naive)
-        )
+        naive)
       ))
   )
 
-;todo: this looks awful
+;todo: this still doesn't look right
+(defn transliterate-naive [word]
+  (cond
+    (= [] word) ""
+    (= (first word) \っ)
+    (let [t (transliterate-single-kana (first (rest word)))]
+      (str (first t)
+           (transliterate-naive (rest word))))
+    (#{\ゃ \ゅ \ょ} (first (rest word)))
+    (match [(first word) (first (rest word))]
+           [fst \ゃ] (str (first (transliterate-single-kana fst)) "ya" (transliterate-naive (rest (rest word))))
+           [fst \ゅ] (str (first (transliterate-single-kana fst)) "yu" (transliterate-naive (rest (rest word))))
+           [fst \ょ] (str (first (transliterate-single-kana fst)) "yo" (transliterate-naive (rest (rest word))))
+           )
+    :else
+    (str (transliterate-single-kana (first word)) (transliterate-naive (rest word)))))
+
 (defn transliterate [word]
-  (let [fst (first word)
-        snd (first (rest word))]
-    (match [fst snd]
-           [\っ snd] (let [t (transliterate-single-kana snd)]
-                      (str (transliterate-single-kana fst) (str (first t) t)
-                           (transliterate (rest (rest word)))))
-           [\し \ゃ] (str "sha" (transliterate (rest (rest word))))
-           [\し \ゅ] (str "shu" (transliterate (rest (rest word))))
-           [\し \ょ] (str "sho" (transliterate (rest (rest word))))
-           [\じ \ゃ] (str "ja" (transliterate (rest (rest word))))
-           [\じ \ゅ] (str "ju" (transliterate (rest (rest word))))
-           [\じ \ょ] (str "jo" (transliterate (rest (rest word))))
-           [fst \ゃ] (str (first (transliterate-single-kana fst)) "ya" (transliterate (rest (rest word))))
-           [fst \ゅ] (str (first (transliterate-single-kana fst)) "yu" (transliterate (rest (rest word))))
-           [fst \ょ] (str (first (transliterate-single-kana fst)) "yo" (transliterate (rest (rest word))))
-           [nil nil] nil
-           :else (str (transliterate-single-kana fst) (transliterate (rest word))))
-    ))
+  (let [replacements [["si" "shi"]
+                      ["zi" "ji"]
+                      ["ti" "chi"]
+                      ["di" "ji"]
+                      ["tu" "tsu"]
+                      ["du" "dzu"]
+                      ["sy" "sh"]
+                      ["ty" "ch"]
+                      ["dy" "j"]
+                      ["zy" "j"]
+                      ]]
+    (reduce
+      (fn [val [m r]]
+        (string/replace val m r))
+      (transliterate-naive word)
+      replacements)))
+
 
 (defn second-morae [kana]
   (string/join (rest (take (/ (count kana) 2) kana)))
@@ -93,10 +103,6 @@
        (map analyze)
        )
   )
-
-; for each word
-; if it has an attribute matching this one
-; include the word by its kana representation
 
 (defn matches-attribute? [group-kana word]
   (some

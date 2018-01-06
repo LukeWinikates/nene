@@ -11,6 +11,7 @@
       (is (= (transliterate "りんりん") "rinrin"))
       (is (= (transliterate "びしょびしょ") "bishobisho"))
       (is (= (transliterate "じゃぶじゃぶ") "jabujabu"))
+      (is (= (transliterate "ぽっちゃり") "potchari"))
       (is (= (transliterate "きゅんきゅん") "kyunkyun"))
       )
 
