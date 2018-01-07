@@ -7,6 +7,7 @@
                  [ring/ring-json "0.4.0"]
                  [ring-server "0.4.0"]
                  [org.clojure/core.match "0.3.0-alpha5"]
+                 [org.clojure/data.csv "0.1.4"]
                  ]
   :plugins [[lein-ring "0.8.12"]]
   :ring {:handler nene.handler/app

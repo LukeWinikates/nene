@@ -1,8 +1,8 @@
 (ns nene.models.mora
   (:require [clojure.string :as string]
-            [clojure.core.match :refer [match]]))
-
-; todo: move the canonical format into csv rather than having the words in this file.
+            [clojure.data.csv :as csv]
+            [clojure.core.match :refer [match]]
+            [clojure.java.io :as io]))
 
 (def hiragana
   (array-map
@@ -98,7 +98,10 @@
   )
 
 (def words
-  (->> ["ぽつぽつ" "せかせか" "どんどん" "ずたずた" "ばらばら" "がらがら" "がちがち" "ごろんごろん" "はらはら" "ちらちら" "きらきら"]
+  (->> (with-open [reader (io/reader "resources/words.csv")]
+         (doall
+           (->> (csv/read-csv reader)
+                (map first))))
        (map (fn [word] {:kana word :romaji (transliterate word)}))
        (map analyze)
        )
