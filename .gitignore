@@ -13,3 +13,4 @@ nene.iml
 .idea/
 elm-stuff/
 resources/public/js/
+.lein-repl-history
