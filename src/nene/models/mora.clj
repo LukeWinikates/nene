@@ -65,7 +65,8 @@
     (str (transliterate-single-kana (first word)) (transliterate-naive (rest word)))))
 
 (defn transliterate [word]
-  (let [replacements [["si" "shi"]
+  (let [replacements [["hu" "fu"]
+                      ["si" "shi"]
                       ["zi" "ji"]
                       ["ti" "chi"]
                       ["di" "ji"]
