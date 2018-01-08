@@ -14,3 +14,4 @@ nene.iml
 elm-stuff/
 resources/public/js/
 .lein-repl-history
+.nrepl-port
