@@ -132,3 +132,31 @@
             }
            ) (:attributes word)))
   )
+
+(def valid-first-mora
+  (remove #{"ん"} (remove nil? hiragana-vector)))
+
+(defn doubleify [half]
+  (str half half))
+
+(defn wordup [word]
+  {:kana word :romaji (transliterate word)})
+
+(defn variants []
+  (->> valid-first-mora
+       (map
+         (fn [first-mora]
+           {
+            :en    (transliterate first-mora)
+            :jp    (str first-mora)
+            :words (map (comp wordup doubleify) (concat (map (fn [second-mora]
+                                                 (str first-mora second-mora)
+                                                 )
+                                               (remove nil? hiragana-vector))
+                                          (map (fn [second-mora]
+                                                 (str first-mora second-mora "ん")
+                                                 )
+                                               valid-first-mora)))
+            }
+
+           ))))

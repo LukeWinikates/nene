@@ -6,6 +6,7 @@
 
 (defroutes gigo-routes
            (GET "/api/gigo" [] (response [{:jp "基本" :en "Basics" :words mora/words}]))
-           (GET "/api/gigo/:word/relatives" [word] (response (mora/relatives (mora/find-word-by-romaji word)) ))
+           (GET "/api/gigo/:word/relatives" [word] (response (mora/relatives (mora/find-word-by-romaji word))))
+           (GET "/api/words" [] (response (mora/variants)))
            )
 
