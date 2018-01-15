@@ -1,7 +1,7 @@
-(ns nene.test.mora
+(ns nene.test.transliterate
   (:use clojure.test
         ring.mock.request
-        nene.models.mora))
+        nene.transliterate))
 
 (deftest test-mora
   (testing "transliteration"
