@@ -2,6 +2,7 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.string :as string]))
 
+; todo: consider organizing using ア行・カ行 notation
 (def hiragana
   (array-map
     "" ["あ" "い" "う" "え" "お"]
@@ -22,6 +23,27 @@
     "nn" ["ん"]
     )
   )
+
+(defn- vowel->index [v]
+  (case (str v)
+    "a" 0
+    "i" 1
+    "u" 2
+    "e" 3
+    "o" 4
+    ))
+
+(defn romaji->mora [romaji]
+  (let [c (first romaji)
+        v (fnext romaji)]
+    (if (= (count romaji) 1)
+      (get-in hiragana ["" (vowel->index (first romaji))])
+      (get-in hiragana [c (vowel->index v)])
+      )))
+
+(defn romaji->kana [romaji]
+  (case (first romaji)
+    #{\a \i \u \e \o} ()))
 
 (def hiragana-vector
   (vec (apply concat (vals hiragana))))

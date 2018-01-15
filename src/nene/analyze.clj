@@ -63,21 +63,49 @@
 (defn kana->kana-romaji-map [word]
   {:kana word :romaji (transliterate word)})
 
-(defn variants []
-  (->> valid-first-mora
-       (map
-         (fn [first-mora]
-           {
-            :en    (transliterate first-mora)
-            :jp    (str first-mora)
-            :words (map
-                     (comp kana->kana-romaji-map double-mora)
-                     (concat (map
-                               (fn [second-mora] (str first-mora second-mora))
-                               (remove nil? t/hiragana-vector))
-                             (map
-                               (fn [second-mora] (str first-mora second-mora "ん"))
-                               valid-first-mora)))
-            }
+;(defn variants []
+;  (->> valid-first-mora
+;       (map
+;         (fn [first-mora]
+;           {
+;            :en    (transliterate first-mora)
+;            :jp    (str first-mora)
+;            :words (map
+;                     (comp kana->kana-romaji-map double-mora)
+;                     (concat (map
+;                               (fn [second-mora] (str first-mora second-mora))
+;                               (remove nil? t/hiragana-vector))
+;                             (map
+;                               (fn [second-mora] (str first-mora second-mora "ん"))
+;                               valid-first-mora)))
+;            }
+;
+;           ))))
 
-           ))))
+(defn with-cvc [cv c2]
+  (map
+    (fn [v2] {:vowel v2 :items [{:romaji (str cv c2 v2) :kana ""} {:romaji (str cv c2 v2 "n") :kana ""}]})
+    ["a" "i" "u" "e" "o"]
+    )
+  )
+
+;todo: figure out something smart with the mismatch between the consonant lists here, then 'nn' is not nice
+(defn with-first-mora [cv]
+  (map
+    (fn [c] {:consonant c :items (vec (with-cvc cv c))})
+    ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" "nn"]
+    )
+  )
+
+(defn with-starting-consonant [c]
+  (map
+    (fn [v] {:vowel v :items (vec (with-first-mora (str c v)))})
+    ["a" "i" "u" "e" "o"]
+    )
+  )
+
+(defn variants []
+  (vec
+    (map
+      (fn [c] {:consonant c :items (with-starting-consonant c)})
+      ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p"])))
