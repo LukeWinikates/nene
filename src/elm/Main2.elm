@@ -7,12 +7,13 @@ import Http
 import Dict
 import Json.Decode as Decode exposing (field)
 
-
+--todo: finish renaming GroupFetch to something else... there gould be a sort of generic fetching type
+--todo: provide kana representations for each consonant/vowel 行・段
 main =
     Html.program
         { view = view
         , update = update
-        , init = ( emptyModel, Http.send GroupFetch (Http.get "/api/words" groupDecoder) )
+        , init = ( emptyModel, Http.send GroupFetch (Http.get "/api/words" universeDecoder) )
         , subscriptions = always Sub.none
         }
 
@@ -23,7 +24,7 @@ type Page
 
 type alias Model =
     { notificationText : Maybe String
-    , groups : Maybe (List Group)
+    , gojuon : Maybe GitaigoByGojuonOrder
     , page : Page
     }
 
@@ -31,13 +32,13 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { notificationText = Nothing
-    , groups = Nothing
+    , gojuon = Nothing
     , page = Universe
     }
 
 
 type Msg
-    = GroupFetch (Result Http.Error (List Group))
+    = GroupFetch (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
 
 
@@ -47,7 +48,7 @@ update msg model =
             { model | notificationText = Just <| toString er } |> noCommand
 
         GroupFetch (Ok categories) ->
-            { model | notificationText = Nothing, groups = Just categories } |> noCommand
+            { model | notificationText = Nothing, gojuon = Just categories } |> noCommand
 
         PageChange page ->
             { model | page = page } |> noCommand
@@ -73,8 +74,7 @@ type alias Group =
 
 
 type alias GitaigoByGojuonOrder =
-    { items : List (ConsonantWiseGrouping (ConsonantWiseGrouping Word))
-    }
+    List (ConsonantWiseGrouping (ConsonantWiseGrouping Word))
 
 
 type alias ConsonantWiseGrouping a =
@@ -91,40 +91,49 @@ type alias VowelWiseGrouping a =
 
 startingValue : GitaigoByGojuonOrder
 startingValue =
-    { items =
-        [ { consonant = ""
-          , items =
-                [ { vowel = "a"
-                  , items =
-                        [ { consonant = ""
-                          , items =
-                                [ { vowel = "a"
-                                  , items =
-                                        [ { romaji = "aa", kana = "" }
-                                        , { romaji = "aan", kana = "" }
-                                        ]
-                                  }
-                                ]
-                          }
-                        ]
-                  }
-                ]
-          }
-        ]
-    }
+    [ { consonant = ""
+      , items =
+            [ { vowel = "a"
+              , items =
+                    [ { consonant = ""
+                      , items =
+                            [ { vowel = "a"
+                              , items =
+                                    [ { romaji = "aa", kana = "" }
+                                    , { romaji = "aan", kana = "" }
+                                    ]
+                              }
+                            ]
+                      }
+                    ]
+              }
+            ]
+      }
+    ]
 
 
 validInitialConsonants =
     [ "", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" ]
 
 
-groupDecoder : Decode.Decoder (List Group)
-groupDecoder =
-    Decode.list <|
-        Decode.map3 Group
-            (field "en" Decode.string)
-            (field "jp" Decode.string)
-            (field "words" (Decode.list wordDecoder))
+vowelWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (VowelWiseGrouping a)
+vowelWiseGroupingDecoder decoder =
+    Decode.map2 VowelWiseGrouping
+        (field "vowel" Decode.string)
+        (field "items" (Decode.list decoder))
+
+
+consonantWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (ConsonantWiseGrouping a)
+consonantWiseGroupingDecoder decoder =
+    Decode.map2 ConsonantWiseGrouping
+        (field "consonant" Decode.string)
+        (field "items" (Decode.list (vowelWiseGroupingDecoder decoder)))
+
+
+universeDecoder : Decode.Decoder GitaigoByGojuonOrder
+universeDecoder =
+    Decode.list
+        (consonantWiseGroupingDecoder (consonantWiseGroupingDecoder wordDecoder))
 
 
 wordDecoder : Decode.Decoder Word
@@ -154,13 +163,25 @@ groupView category =
         ]
 
 
+firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+firstLevelConsonantView consonantGroup =
+    section [] <|
+        (text consonantGroup.consonant)
+            :: List.map (\vg -> (text vg.vowel)) consonantGroup.items
+
+
+gojuonView gojuon =
+    section [] <|
+        List.map firstLevelConsonantView gojuon
+
+
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
         Universe ->
-            case model.groups of
-                Just groups ->
-                    section [] (List.map groupView groups)
+            case model.gojuon of
+                Just gojuon ->
+                    gojuonView gojuon
 
                 Nothing ->
                     text "no data"

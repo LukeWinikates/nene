@@ -61,7 +61,7 @@
       "っ" nil
       (let [idx (index-of hiragana-vector kana)
             gyo (int (/ idx 5))
-            keta (mod idx 5)
+            keta (mod idx 5) ;todo: per the wikipedia article, these are called "dan/段"
             naive (str (nth (keys hiragana) gyo) (nth "aiueo" keta))]
         naive)
       ))
