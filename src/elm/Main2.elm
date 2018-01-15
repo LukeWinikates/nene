@@ -72,6 +72,52 @@ type alias Group =
     }
 
 
+type alias GitaigoByGojuonOrder =
+    { items : List (ConsonantWiseGrouping (ConsonantWiseGrouping Word))
+    }
+
+
+type alias ConsonantWiseGrouping a =
+    { consonant : String
+    , items : List (VowelWiseGrouping a)
+    }
+
+
+type alias VowelWiseGrouping a =
+    { vowel : String
+    , items : List a
+    }
+
+
+startingValue : GitaigoByGojuonOrder
+startingValue =
+    { items =
+        [ { consonant = ""
+          , items =
+                [ { vowel = "a"
+                  , items =
+                        [ { consonant = ""
+                          , items =
+                                [ { vowel = "a"
+                                  , items =
+                                        [ { romaji = "aa", kana = "" }
+                                        , { romaji = "aan", kana = "" }
+                                        ]
+                                  }
+                                ]
+                          }
+                        ]
+                  }
+                ]
+          }
+        ]
+    }
+
+
+validInitialConsonants =
+    [ "", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" ]
+
+
 groupDecoder : Decode.Decoder (List Group)
 groupDecoder =
     Decode.list <|
@@ -112,8 +158,12 @@ pageView : Model -> Html Msg
 pageView model =
     case model.page of
         Universe ->
-            Maybe.map (\groups -> section [] (List.map groupView groups)) model.groups
-                |> Maybe.withDefault (text "no groups")
+            case model.groups of
+                Just groups ->
+                    section [] (List.map groupView groups)
+
+                Nothing ->
+                    text "no data"
 
 
 view model =
