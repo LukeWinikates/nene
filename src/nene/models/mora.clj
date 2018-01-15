@@ -6,7 +6,7 @@
 
 (def hiragana
   (array-map
-    "" ["あ" "い" "う" "え" "お"]
+    ""  ["あ" "い" "う" "え" "お"]
     "k" ["か" "き" "く" "け" "こ"]
     "s" ["さ" "し" "す" "せ" "そ"]
     "t" ["た" "ち" "つ" "て" "と"]
@@ -136,10 +136,10 @@
 (def valid-first-mora
   (remove #{"ん"} (remove nil? hiragana-vector)))
 
-(defn doubleify [half]
+(defn double-mora [half]
   (str half half))
 
-(defn wordup [word]
+(defn kana->kana-romaji-map [word]
   {:kana word :romaji (transliterate word)})
 
 (defn variants []
@@ -149,14 +149,14 @@
            {
             :en    (transliterate first-mora)
             :jp    (str first-mora)
-            :words (map (comp wordup doubleify) (concat (map (fn [second-mora]
-                                                 (str first-mora second-mora)
-                                                 )
-                                               (remove nil? hiragana-vector))
-                                          (map (fn [second-mora]
-                                                 (str first-mora second-mora "ん")
-                                                 )
-                                               valid-first-mora)))
+            :words (map
+                     (comp kana->kana-romaji-map double-mora)
+                     (concat (map
+                               (fn [second-mora] (str first-mora second-mora))
+                               (remove nil? hiragana-vector))
+                             (map
+                               (fn [second-mora] (str first-mora second-mora "ん"))
+                               valid-first-mora)))
             }
 
            ))))
