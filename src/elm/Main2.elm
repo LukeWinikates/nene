@@ -7,8 +7,11 @@ import Http
 import Dict
 import Json.Decode as Decode exposing (field)
 
+
 --todo: finish renaming GroupFetch to something else... there gould be a sort of generic fetching type
 --todo: provide kana representations for each consonant/vowel 行・段
+
+
 main =
     Html.program
         { view = view
@@ -89,29 +92,6 @@ type alias VowelWiseGrouping a =
     }
 
 
-startingValue : GitaigoByGojuonOrder
-startingValue =
-    [ { consonant = ""
-      , items =
-            [ { vowel = "a"
-              , items =
-                    [ { consonant = ""
-                      , items =
-                            [ { vowel = "a"
-                              , items =
-                                    [ { romaji = "aa", kana = "" }
-                                    , { romaji = "aan", kana = "" }
-                                    ]
-                              }
-                            ]
-                      }
-                    ]
-              }
-            ]
-      }
-    ]
-
-
 validInitialConsonants =
     [ "", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" ]
 
@@ -163,11 +143,32 @@ groupView category =
         ]
 
 
+secondLevelConsonantView : ConsonantWiseGrouping Word -> Html Msg
+secondLevelConsonantView consonantGroup =
+    section [ style [ ( "width", "100%" ) ] ] <|
+        (div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ] [ (text consonantGroup.consonant) ])
+            :: List.map
+                (\vg ->
+                    div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ]
+                        ((text vg.vowel)
+                            :: (List.map (\w -> div [] [ (text w.romaji) ]) vg.items)
+                        )
+                )
+                consonantGroup.items
+
+
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 firstLevelConsonantView consonantGroup =
-    section [] <|
-        (text consonantGroup.consonant)
-            :: List.map (\vg -> (text vg.vowel)) consonantGroup.items
+    section [ style [ ( "width", "100%" ) ] ] <|
+        (div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ] [ (text consonantGroup.consonant) ])
+            :: List.map
+                (\vg ->
+                    div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ]
+                        ((text vg.vowel)
+                            :: (List.map secondLevelConsonantView vg.items)
+                        )
+                )
+                consonantGroup.items
 
 
 gojuonView gojuon =

@@ -84,7 +84,7 @@
 
 (defn with-cvc [cv c2]
   (map
-    (fn [v2] {:vowel v2 :items [{:romaji (str cv c2 v2) :kana ""} {:romaji (str cv c2 v2 "n") :kana ""}]})
+    (fn [v2] {:vowel v2 :items [{:romaji (double-mora (str cv c2 v2)) :kana ""} {:romaji (double-mora (str cv c2 v2 "n")) :kana ""}]})
     ["a" "i" "u" "e" "o"]
     )
   )
