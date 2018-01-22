@@ -29,6 +29,9 @@
        )
   )
 
+(defn attested? [romaji]
+  (boolean (not-empty (filter #(= (:romaji %) romaji) words))))
+
 (defn matches-attribute? [group-kana word]
   (some
     (fn [attr] (= (:label attr) group-kana))
@@ -63,16 +66,18 @@
 (defn kana->kana-romaji-map [word]
   {:kana word :romaji (transliterate word)})
 
+(defn romaji->word [romaji]
+  {:romaji    (double-mora romaji)
+   :kana      ""
+   :attested? (attested? (double-mora romaji))})
+
 (defn with-cvc [cv c2]
   (map
     (fn [v2 d] {:vowel v2
                 :dan   d
-                :items [{:romaji (double-mora (str cv c2 v2))
-                         :kana   ""}
-                        {:romaji (double-mora (str cv c2 v2 "n"))
-                         :kana   ""}]})
-    ["a" "i" "u" "e" "o"]
-    ["ア段" "イ段" "ウ段" "エ段" "オ段"]
+                :items (vec (map romaji->word [(str cv c2 v2) (str cv c2 v2 "n")]))})
+      ["a" "i" "u" "e" "o"]
+      ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
   )
 

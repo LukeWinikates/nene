@@ -104,6 +104,7 @@ saveWord word =
 type alias Word =
     { kana : String
     , romaji : String
+    , attested : Bool
     }
 
 
@@ -160,9 +161,10 @@ universeDecoder =
 
 wordDecoder : Decode.Decoder Word
 wordDecoder =
-    Decode.map2 Word
+    Decode.map3 Word
         (field "kana" Decode.string)
         (field "romaji" Decode.string)
+        (field "attested?" Decode.bool)
 
 
 wordView : Word -> Html Msg
@@ -196,6 +198,24 @@ secondLevelConsonantView consonantGroup =
                 consonantGroup.items
 
 
+itemView : Word -> Html Msg
+itemView word =
+    div
+        [ style
+            [ ( "height", "19px" )
+            , ( "width", "38px" )
+            , ( "display", "inline-block" )
+            , ( "background-color"
+              , if word.attested then
+                    "blue"
+                else
+                    "transparent"
+              )
+            ]
+        ]
+        [ text word.romaji ]
+
+
 secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
 secondMoraGroupings consonantGroup =
     section []
@@ -210,7 +230,7 @@ secondMoraGroupings consonantGroup =
                         , ( "font-size", "8px" )
                         ]
                     ]
-                    (List.map (.romaji >> text) vg.items)
+                    (List.map itemView vg.items)
             )
             consonantGroup.items
         )
