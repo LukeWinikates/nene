@@ -10,9 +10,8 @@ import Maybe exposing (withDefault)
 
 
 --todo: finish renaming GroupFetch to something else... there gould be a sort of generic fetching type
---todo: provide kana representations for each consonant/vowel 行・段
-
-
+--todo: rename universe to "explorer"
+--todo: rename this file, stop having separate Main and Main2 files
 main =
     Html.program
         { view = view

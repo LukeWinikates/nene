@@ -4,6 +4,9 @@
             [clojure.java.io :as io]
             [nene.transliterate :as t :refer [transliterate]]))
 
+;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
+;TODO: clean up unused/dead functions and routes
+;TODO: switch source of truth to database (? - a little harder to work with than the csv file ?)
 
 (defn second-morae [kana]
   (string/join (rest (take (/ (count kana) 2) kana)))
@@ -71,6 +74,7 @@
    :kana      ""
    :attested? (attested? (double-mora romaji))})
 
+; todo: switch this to generate using the kana instead of the romaji
 (defn with-cvc [cv c2]
   (map
     (fn [v2 d] {:vowel v2
