@@ -1,11 +1,12 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, header, section, span, strong, text)
+import Html exposing (Html, article, button, div, em, header, input, section, span, strong, text)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Dict
 import Json.Decode as Decode exposing (field)
+import Maybe exposing (withDefault)
 
 
 --todo: finish renaming GroupFetch to something else... there gould be a sort of generic fetching type
@@ -23,6 +24,7 @@ main =
 
 type Page
     = Universe
+    | Add (Maybe String)
 
 
 type alias Model =
@@ -40,9 +42,16 @@ emptyModel =
     }
 
 
+type WordEvent
+    = Change String
+    | Save String
+    | SaveSuccess (Result Http.Error Bool)
+
+
 type Msg
     = GroupFetch (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
+    | Adder WordEvent
 
 
 update msg model =
@@ -55,12 +64,33 @@ update msg model =
 
         PageChange page ->
             { model | page = page } |> noCommand
+
+        Adder wordEvent ->
+            case wordEvent of
+                Change word ->
+                    { model | page = Add <| Just word } |> noCommand
+
+                Save word ->
+                    ( { model | page = Add Nothing }, saveWord word )
+
+                SaveSuccess bool ->
+                    { model | page = Add Nothing } |> noCommand
     )
 
 
 noCommand : Model -> ( Model, Cmd Msg )
 noCommand model =
     ( model, Cmd.none )
+
+
+saveWord : String -> Cmd Msg
+saveWord word =
+    Http.send
+        (SaveSuccess >> Adder)
+        (Http.post ("/api/words/" ++ word ++ "/attest")
+            Http.emptyBody
+            (Decode.succeed True)
+        )
 
 
 type alias Word =
@@ -176,6 +206,14 @@ gojuonView gojuon =
         List.map firstLevelConsonantView gojuon
 
 
+adderView maybeWord =
+    (Html.node "form") [ onSubmit (Adder <| Save <| withDefault "" <| maybeWord) ]
+        [ input [ onInput <| (Change >> Adder) ] []
+        , button [ type_ "submit" ] [ text "add" ]
+        , button [ type_ "button", onClick (PageChange Universe) ] [ text "x" ]
+        ]
+
+
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
@@ -187,9 +225,13 @@ pageView model =
                 Nothing ->
                     text "no data"
 
+        Add maybeWord ->
+            adderView maybeWord
+
 
 view model =
     div []
         [ div [] [ text <| Maybe.withDefault "" model.notificationText ]
+        , button [ onClick (PageChange (Add Nothing)) ] [ text "+" ]
         , pageView (model)
         ]
