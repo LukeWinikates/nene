@@ -1,0 +1,2 @@
+{:up   ["CREATE TABLE words (id serial, word text)"]
+ :down ["DROP TABLE words"]}

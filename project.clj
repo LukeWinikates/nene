@@ -8,8 +8,13 @@
                  [ring-server "0.4.0"]
                  [org.clojure/core.match "0.3.0-alpha5"]
                  [org.clojure/data.csv "0.1.4"]
+                 [org.postgresql/postgresql "42.2.0"]
+                 [korma "0.4.3"]
+                 [ragtime "0.7.2"]
                  ]
   :plugins [[lein-ring "0.8.12"]]
+  :aliases {"migrate"  ["run" "-m" "nene.migrate/migrate"]
+            "rollback" ["run" "-m" "nene.migrate/rollback"]}
   :ring {:handler nene.handler/app
          :init nene.handler/init
          :destroy nene.handler/destroy}
