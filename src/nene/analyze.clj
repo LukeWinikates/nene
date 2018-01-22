@@ -63,49 +63,40 @@
 (defn kana->kana-romaji-map [word]
   {:kana word :romaji (transliterate word)})
 
-;(defn variants []
-;  (->> valid-first-mora
-;       (map
-;         (fn [first-mora]
-;           {
-;            :en    (transliterate first-mora)
-;            :jp    (str first-mora)
-;            :words (map
-;                     (comp kana->kana-romaji-map double-mora)
-;                     (concat (map
-;                               (fn [second-mora] (str first-mora second-mora))
-;                               (remove nil? t/hiragana-vector))
-;                             (map
-;                               (fn [second-mora] (str first-mora second-mora "ん"))
-;                               valid-first-mora)))
-;            }
-;
-;           ))))
-
 (defn with-cvc [cv c2]
   (map
-    (fn [v2] {:vowel v2 :items [{:romaji (double-mora (str cv c2 v2)) :kana ""} {:romaji (double-mora (str cv c2 v2 "n")) :kana ""}]})
+    (fn [v2 d] {:vowel v2
+                :dan   d
+                :items [{:romaji (double-mora (str cv c2 v2))
+                         :kana   ""}
+                        {:romaji (double-mora (str cv c2 v2 "n"))
+                         :kana   ""}]})
     ["a" "i" "u" "e" "o"]
+    ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
   )
 
 ;todo: figure out something smart with the mismatch between the consonant lists here, then 'nn' is not nice
 (defn with-first-mora [cv]
   (map
-    (fn [c] {:consonant c :items (vec (with-cvc cv c))})
+    (fn [c g] {:consonant c :gyo g :items (vec (with-cvc cv c))})
     ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" "nn"]
+    ["ア行", "カ行", "サ行", "タ行", "ナ行", "ハ行", "マ行", "ヤ行", "ラ行", "ワ行", "ガ行", "ザ行", "ダ行", "バ行", "パ行", "ン行"]
     )
   )
 
 (defn with-starting-consonant [c]
   (map
-    (fn [v] {:vowel v :items (vec (with-first-mora (str c v)))})
+    (fn [v d] {:vowel v :dan d :items (vec (with-first-mora (str c v)))})
     ["a" "i" "u" "e" "o"]
+    ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
   )
 
 (defn variants []
   (vec
     (map
-      (fn [c] {:consonant c :items (with-starting-consonant c)})
-      ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p"])))
+      (fn [c g] {:consonant c :gyo g :items (with-starting-consonant c)})
+      ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p"]
+      ["ア行", "カ行", "サ行", "タ行", "ナ行", "ハ行", "マ行", "ヤ行", "ラ行", "ワ行", "ガ行", "ザ行", "ダ行", "バ行", "パ行"]
+      )))

@@ -120,12 +120,14 @@ type alias GitaigoByGojuonOrder =
 
 type alias ConsonantWiseGrouping a =
     { consonant : String
+    , gyo : String
     , items : List (VowelWiseGrouping a)
     }
 
 
 type alias VowelWiseGrouping a =
     { vowel : String
+    , dan : String
     , items : List a
     }
 
@@ -136,15 +138,17 @@ validInitialConsonants =
 
 vowelWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (VowelWiseGrouping a)
 vowelWiseGroupingDecoder decoder =
-    Decode.map2 VowelWiseGrouping
+    Decode.map3 VowelWiseGrouping
         (field "vowel" Decode.string)
+        (field "dan" Decode.string)
         (field "items" (Decode.list decoder))
 
 
 consonantWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (ConsonantWiseGrouping a)
 consonantWiseGroupingDecoder decoder =
-    Decode.map2 ConsonantWiseGrouping
+    Decode.map3 ConsonantWiseGrouping
         (field "consonant" Decode.string)
+        (field "gyo" Decode.string)
         (field "items" (Decode.list (vowelWiseGroupingDecoder decoder)))
 
 
@@ -184,29 +188,52 @@ groupView category =
 secondLevelConsonantView : ConsonantWiseGrouping Word -> Html Msg
 secondLevelConsonantView consonantGroup =
     section [ style [ ( "width", "100%" ) ] ] <|
-        (div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ] [ (text consonantGroup.consonant) ])
+        (div [ style [] ] [ (text consonantGroup.gyo) ])
             :: List.map
                 (\vg ->
-                    div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ]
-                        ((text vg.vowel)
-                            :: (List.map (\w -> div [] [ (text w.romaji) ]) vg.items)
-                        )
+                    div [ style [ ( "height", "20px" ), ( "width", "20px" ), ( "border", "1px solid blue" ) ] ] []
                 )
                 consonantGroup.items
+
+
+secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
+secondMoraGroupings consonantGroup =
+    section []
+        (List.map
+            (\vg ->
+                div
+                    [ style
+                        [ ( "height", "38px" )
+                        , ( "width", "38px" )
+                        , ( "display", "inline-block" )
+                        , ( "border", "1px solid blue" )
+                        , ( "font-size", "8px" )
+                        ]
+                    ]
+                    (List.map (.romaji >> text) vg.items)
+            )
+            consonantGroup.items
+        )
 
 
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 firstLevelConsonantView consonantGroup =
-    section [ style [ ( "width", "100%" ) ] ] <|
-        (div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ] [ (text consonantGroup.consonant) ])
-            :: List.map
-                (\vg ->
-                    div [ style [ ( "display", "flex" ), ( "width", "20%" ) ] ]
-                        ((text vg.vowel)
-                            :: (List.map secondLevelConsonantView vg.items)
-                        )
-                )
-                consonantGroup.items
+    section [ style [ ( "border-bottom", "1px solid gray" ) ] ]
+        (div [ style [] ] [ (text consonantGroup.gyo) ]
+            :: (List.map
+                    (\vg ->
+                        div
+                            [ style
+                                [ ( "display", "inline-block" )
+                                , ( "width", "196px" )
+                                , ( "text-align", "center" )
+                                ]
+                            ]
+                            (text vg.dan :: (List.map secondMoraGroupings vg.items))
+                    )
+                    consonantGroup.items
+               )
+        )
 
 
 gojuonView gojuon =
