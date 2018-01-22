@@ -45,7 +45,7 @@ emptyModel =
 type WordEvent
     = Change String
     | Save String
-    | SaveSuccess (Result Http.Error Bool)
+    | SaveComplete (Result Http.Error Bool)
 
 
 type Msg
@@ -63,19 +63,27 @@ update msg model =
             { model | notificationText = Nothing, gojuon = Just categories } |> noCommand
 
         PageChange page ->
-            { model | page = page } |> noCommand
+            { model | page = page } |> clearNotification |> noCommand
 
         Adder wordEvent ->
             case wordEvent of
                 Change word ->
-                    { model | page = Add <| Just word } |> noCommand
+                    { model | page = Add <| Just word } |> clearNotification |> noCommand
 
                 Save word ->
-                    ( { model | page = Add Nothing }, saveWord word )
+                    ( { model | page = Add Nothing } |> clearNotification, saveWord word )
 
-                SaveSuccess bool ->
+                SaveComplete (Err error) ->
+                    { model | notificationText = Just (toString error) } |> noCommand
+
+                SaveComplete (Ok _) ->
                     { model | page = Add Nothing } |> noCommand
     )
+
+
+clearNotification : Model -> Model
+clearNotification model =
+    { model | notificationText = Nothing }
 
 
 noCommand : Model -> ( Model, Cmd Msg )
@@ -86,7 +94,7 @@ noCommand model =
 saveWord : String -> Cmd Msg
 saveWord word =
     Http.send
-        (SaveSuccess >> Adder)
+        (SaveComplete >> Adder)
         (Http.post ("/api/words/" ++ word ++ "/attest")
             Http.emptyBody
             (Decode.succeed True)
@@ -208,7 +216,7 @@ gojuonView gojuon =
 
 adderView maybeWord =
     (Html.node "form") [ onSubmit (Adder <| Save <| withDefault "" <| maybeWord) ]
-        [ input [ onInput <| (Change >> Adder) ] []
+        [ input [ onInput <| (Change >> Adder), value <| withDefault "" <| maybeWord ] []
         , button [ type_ "submit" ] [ text "add" ]
         , button [ type_ "button", onClick (PageChange Universe) ] [ text "x" ]
         ]
