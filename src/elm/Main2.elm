@@ -9,20 +9,20 @@ import Json.Decode as Decode exposing (field)
 import Maybe exposing (withDefault)
 
 
---todo: finish renaming GroupFetch to something else... there gould be a sort of generic fetching type
---todo: rename universe to "explorer"
 --todo: rename this file, stop having separate Main and Main2 files
+
+
 main =
     Html.program
         { view = view
         , update = update
-        , init = ( emptyModel, Http.send GroupFetch (Http.get "/api/words" universeDecoder) )
+        , init = ( emptyModel, Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder) )
         , subscriptions = always Sub.none
         }
 
 
 type Page
-    = Universe
+    = Explorer
     | Add (Maybe String)
 
 
@@ -37,7 +37,7 @@ emptyModel : Model
 emptyModel =
     { notificationText = Nothing
     , gojuon = Nothing
-    , page = Universe
+    , page = Explorer
     }
 
 
@@ -48,17 +48,17 @@ type WordEvent
 
 
 type Msg
-    = GroupFetch (Result Http.Error GitaigoByGojuonOrder)
+    = LoadGojuonGrid (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
     | Adder WordEvent
 
 
 update msg model =
     (case msg of
-        GroupFetch (Err er) ->
+        LoadGojuonGrid (Err er) ->
             { model | notificationText = Just <| toString er } |> noCommand
 
-        GroupFetch (Ok categories) ->
+        LoadGojuonGrid (Ok categories) ->
             { model | notificationText = Nothing, gojuon = Just categories } |> noCommand
 
         PageChange page ->
@@ -152,8 +152,8 @@ consonantWiseGroupingDecoder decoder =
         (field "items" (Decode.list (vowelWiseGroupingDecoder decoder)))
 
 
-universeDecoder : Decode.Decoder GitaigoByGojuonOrder
-universeDecoder =
+gojuonDecoder : Decode.Decoder GitaigoByGojuonOrder
+gojuonDecoder =
     Decode.list
         (consonantWiseGroupingDecoder (consonantWiseGroupingDecoder wordDecoder))
 
@@ -264,14 +264,14 @@ adderView maybeWord =
     (Html.node "form") [ onSubmit (Adder <| Save <| withDefault "" <| maybeWord) ]
         [ input [ onInput <| (Change >> Adder), value <| withDefault "" <| maybeWord ] []
         , button [ type_ "submit" ] [ text "add" ]
-        , button [ type_ "button", onClick (PageChange Universe) ] [ text "x" ]
+        , button [ type_ "button", onClick (PageChange Explorer) ] [ text "x" ]
         ]
 
 
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
-        Universe ->
+        Explorer ->
             case model.gojuon of
                 Just gojuon ->
                     gojuonView gojuon
