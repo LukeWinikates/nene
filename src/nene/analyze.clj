@@ -7,7 +7,7 @@
 ;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
 ;TODO: clean up unused/dead functions and routes
 ;TODO: switch source of truth to database (? - a little harder to work with than the csv file ?)
-
+;TODO: from basic kana pair, like ゴロ, generate -> ゴロゴロ, ゴロンゴロン, and ゴロッと, ごろり
 (defn second-morae [kana]
   (string/join (rest (take (/ (count kana) 2) kana)))
   )
@@ -79,7 +79,7 @@
   (map
     (fn [v2 d] {:vowel v2
                 :dan   d
-                :items (vec (map romaji->word [(str cv c2 v2) (str cv c2 v2 "n")]))})
+                :items (vec (map romaji->word [(str cv c2 v2)]))})
       ["a" "i" "u" "e" "o"]
       ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
