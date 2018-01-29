@@ -1,67 +1,85 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, header, section, span, strong, text)
+import Html exposing (Html, article, button, div, em, header, input, section, span, strong, text)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Dict
 import Json.Decode as Decode exposing (field)
+import Maybe exposing (withDefault)
 
 
 main =
     Html.program
         { view = view
         , update = update
-        , init = ( emptyModel, Http.send CategoryFetch (Http.get "/api/gigo" categoriesDecoder) )
+        , init = ( emptyModel, Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder) )
         , subscriptions = always Sub.none
         }
 
 
 type Page
-    = CategoryList
-    | WordDetail Word
+    = Explorer
+    | Add (Maybe String)
 
 
 type alias Model =
     { notificationText : Maybe String
-    , categories : Maybe (List Category)
+    , gojuon : Maybe GitaigoByGojuonOrder
     , page : Page
-    , relatives : Dict.Dict String (List Relative)
     }
 
 
 emptyModel : Model
 emptyModel =
     { notificationText = Nothing
-    , categories = Nothing
-    , page = CategoryList
-    , relatives = Dict.empty
+    , gojuon = Nothing
+    , page = Explorer
     }
 
 
+type WordEvent
+    = Change String
+    | Save String
+    | SaveComplete (Result Http.Error Bool)
+
+
 type Msg
-    = CategoryFetch (Result Http.Error (List Category))
-    | RelativesFetch Word (Result Http.Error (List Relative))
+    = LoadGojuonGrid (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
+    | Adder WordEvent
 
 
 update msg model =
     (case msg of
-        CategoryFetch (Err er) ->
+        LoadGojuonGrid (Err er) ->
             { model | notificationText = Just <| toString er } |> noCommand
 
-        CategoryFetch (Ok categories) ->
-            { model | notificationText = Nothing, categories = Just categories } |> noCommand
-
-        RelativesFetch _ (Err er) ->
-            { model | notificationText = Just <| toString er } |> noCommand
-
-        RelativesFetch word (Ok relatives) ->
-            (saveRelatives word relatives model) |> noCommand
+        LoadGojuonGrid (Ok categories) ->
+            { model | notificationText = Nothing, gojuon = Just categories } |> noCommand
 
         PageChange page ->
-            { model | page = page } |> pageCommand page
+            { model | page = page } |> clearNotification |> noCommand
+
+        Adder wordEvent ->
+            case wordEvent of
+                Change word ->
+                    { model | page = Add <| Just word } |> clearNotification |> noCommand
+
+                Save word ->
+                    ( { model | page = Add Nothing } |> clearNotification, saveWord word )
+
+                SaveComplete (Err error) ->
+                    { model | notificationText = Just (toString error) } |> noCommand
+
+                SaveComplete (Ok _) ->
+                    { model | page = Add Nothing } |> noCommand
     )
+
+
+clearNotification : Model -> Model
+clearNotification model =
+    { model | notificationText = Nothing }
 
 
 noCommand : Model -> ( Model, Cmd Msg )
@@ -69,79 +87,72 @@ noCommand model =
     ( model, Cmd.none )
 
 
-saveRelatives : Word -> List Relative -> Model -> Model
-saveRelatives word relatives model =
-    { model | relatives = Dict.insert word.romaji relatives model.relatives }
-
-
-pageCommand : Page -> Model -> ( Model, Cmd Msg )
-pageCommand page model =
-    ((,) model) <|
-        case page of
-            WordDetail word ->
-                Http.send (RelativesFetch word) (Http.get ("/api/gigo/" ++ word.romaji ++ "/relatives") relativesDecoder)
-
-            _ ->
-                Cmd.none
-
-
-type Loadable a
-    = NotLoaded
-    | Loaded a
-
-
-type alias Relative =
-    { label : String
-    , words : List String
-    }
+saveWord : String -> Cmd Msg
+saveWord word =
+    Http.send
+        (SaveComplete >> Adder)
+        (Http.post ("/api/words/" ++ word ++ "/attest")
+            Http.emptyBody
+            (Decode.succeed True)
+        )
 
 
 type alias Word =
     { kana : String
     , romaji : String
-    , attributes :
-        List WordAttribute
-        --    , relatives : Loadable (List Relative)
+    , attested : Bool
     }
 
 
-mapLoadable : Loadable a -> (a -> b) -> Maybe b
-mapLoadable loadable f =
-    case loadable of
-        NotLoaded ->
-            Nothing
-
-        Loaded something ->
-            Just <| f something
-
-
-type alias WordAttribute =
-    { label : String
-    , flavor : String
-    }
-
-
-type alias Category =
+type alias Group =
     { en : String
     , jp : String
     , words : List Word
     }
 
 
-categoriesDecoder : Decode.Decoder (List Category)
-categoriesDecoder =
-    Decode.list <|
-        Decode.map3 Category
-            (field "en" Decode.string)
-            (field "jp" Decode.string)
-            (field "words" (Decode.list wordDecoder))
+type alias GitaigoByGojuonOrder =
+    List (ConsonantWiseGrouping (ConsonantWiseGrouping Word))
 
 
-attributeDecoder : Decode.Decoder WordAttribute
-attributeDecoder =
-    Decode.map2 WordAttribute
-        (field "label" Decode.string)
-        (field "flavor" Decode.string)
+type alias ConsonantWiseGrouping a =
+    { consonant : String
+    , gyo : String
+    , items : List (VowelWiseGrouping a)
+    }
+
+
+type alias VowelWiseGrouping a =
+    { vowel : String
+    , dan : String
+    , items : List a
+    }
+
+
+validInitialConsonants =
+    [ "", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" ]
+
+
+vowelWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (VowelWiseGrouping a)
+vowelWiseGroupingDecoder decoder =
+    Decode.map3 VowelWiseGrouping
+        (field "vowel" Decode.string)
+        (field "dan" Decode.string)
+        (field "items" (Decode.list decoder))
+
+
+consonantWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (ConsonantWiseGrouping a)
+consonantWiseGroupingDecoder decoder =
+    Decode.map3 ConsonantWiseGrouping
+        (field "consonant" Decode.string)
+        (field "gyo" Decode.string)
+        (field "items" (Decode.list (vowelWiseGroupingDecoder decoder)))
+
+
+gojuonDecoder : Decode.Decoder GitaigoByGojuonOrder
+gojuonDecoder =
+    Decode.list
+        (consonantWiseGroupingDecoder (consonantWiseGroupingDecoder wordDecoder))
 
 
 wordDecoder : Decode.Decoder Word
@@ -149,34 +160,19 @@ wordDecoder =
     Decode.map3 Word
         (field "kana" Decode.string)
         (field "romaji" Decode.string)
-        (field "attributes" (Decode.list attributeDecoder))
-
-
-
---        (Decode.succeed NotLoaded)
-
-
-relativeDecoder : Decode.Decoder Relative
-relativeDecoder =
-    Decode.map2 Relative
-        (field "label" Decode.string)
-        (field "words" (Decode.list Decode.string))
-
-
-relativesDecoder =
-    field "relatives" (Decode.list relativeDecoder)
+        (field "attested?" Decode.bool)
 
 
 wordView : Word -> Html Msg
 wordView word =
-    div [ class "pill", onClick (PageChange <| WordDetail word) ]
+    div [ class "pill" ]
         [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
         , em [] [ text word.romaji ]
         ]
 
 
-categoryView : Category -> Html Msg
-categoryView category =
+groupView : Group -> Html Msg
+groupView category =
     article [ class "card" ]
         [ section [ class "card-label vertical" ]
             [ div [] [ text category.jp ]
@@ -187,58 +183,106 @@ categoryView category =
         ]
 
 
-wordDetailView : Word -> Maybe (List Relative) -> Html Msg
-wordDetailView word relatives =
-    article [ class "super-rounded" ]
-        [ header []
-            [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
-            , em [] [ text word.romaji ]
-            , span [ onClick (PageChange <| CategoryList), style [ ( "float", "right" ) ] ] [ text "x" ]
+secondLevelConsonantView : ConsonantWiseGrouping Word -> Html Msg
+secondLevelConsonantView consonantGroup =
+    section [ style [ ( "width", "100%" ) ] ] <|
+        (div [ style [] ] [ (text consonantGroup.gyo) ])
+            :: List.map
+                (\vg ->
+                    div [ style [ ( "height", "20px" ), ( "width", "20px" ), ( "border", "1px solid blue" ) ] ] []
+                )
+                consonantGroup.items
+
+
+itemView : Word -> Html Msg
+itemView word =
+    div
+        [ style
+            [ ( "height", "19px" )
+            , ( "width", "38px" )
+            , ( "display", "inline-block" )
+            , ( "background-color"
+              , if word.attested then
+                    "blue"
+                else
+                    "transparent"
+              )
             ]
-        , section []
-            (List.map
-                (\attr ->
-                    div []
-                        [ strong [] [ text attr.label ]
-                        , span [] [ text ":" ]
-                        , (text attr.flavor)
+        ]
+        [ text word.romaji ]
+
+
+secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
+secondMoraGroupings consonantGroup =
+    section []
+        (List.map
+            (\vg ->
+                div
+                    [ style
+                        [ ( "height", "38px" )
+                        , ( "width", "38px" )
+                        , ( "display", "inline-block" )
+                        , ( "border", "1px solid blue" )
+                        , ( "font-size", "8px" )
                         ]
-                )
-                word.attributes
+                    ]
+                    (List.map itemView vg.items)
             )
-        , section []
-            ((Maybe.map
-                (\rels ->
-                    List.map
-                        (\relative ->
-                            div []
-                                [ strong [] [ text relative.label ]
-                                , span [] [ text ":" ]
-                                , (text <| String.join ", " relative.words)
+            consonantGroup.items
+        )
+
+
+firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+firstLevelConsonantView consonantGroup =
+    section [ style [ ( "border-bottom", "1px solid gray" ) ] ]
+        (div [ style [] ] [ (text consonantGroup.gyo) ]
+            :: (List.map
+                    (\vg ->
+                        div
+                            [ style
+                                [ ( "display", "inline-block" )
+                                , ( "width", "196px" )
+                                , ( "text-align", "center" )
                                 ]
-                        )
-                        rels
-                )
-                relatives
-             )
-                |> Maybe.withDefault []
-            )
+                            ]
+                            (text vg.dan :: (List.map secondMoraGroupings vg.items))
+                    )
+                    consonantGroup.items
+               )
+        )
+
+
+gojuonView gojuon =
+    section [] <|
+        List.map firstLevelConsonantView gojuon
+
+
+adderView maybeWord =
+    (Html.node "form") [ onSubmit (Adder <| Save <| withDefault "" <| maybeWord) ]
+        [ input [ onInput <| (Change >> Adder), value <| withDefault "" <| maybeWord ] []
+        , button [ type_ "submit" ] [ text "add" ]
+        , button [ type_ "button", onClick (PageChange Explorer) ] [ text "x" ]
         ]
 
 
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
-        CategoryList ->
-            Maybe.map (\categories -> section [] (List.map categoryView categories)) model.categories
-                |> Maybe.withDefault (text "no categories")
+        Explorer ->
+            case model.gojuon of
+                Just gojuon ->
+                    gojuonView gojuon
 
-        WordDetail word ->
-            wordDetailView word (Dict.get word.romaji model.relatives)
+                Nothing ->
+                    text "no data"
+
+        Add maybeWord ->
+            adderView maybeWord
 
 
 view model =
     div []
         [ div [] [ text <| Maybe.withDefault "" model.notificationText ]
+        , button [ onClick (PageChange (Add Nothing)) ] [ text "+" ]
         , pageView (model)
         ]
