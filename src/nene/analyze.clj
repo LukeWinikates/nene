@@ -8,6 +8,9 @@
 ;TODO: clean up unused/dead functions and routes
 ;TODO: switch source of truth to database (? - a little harder to work with than the csv file ?)
 ;TODO: from basic kana pair, like ゴロ, generate -> ゴロゴロ, ゴロンゴロン, and ゴロッと, ごろり
+;TODO: something for single-mora based ones, like sotto, zutto, bou-to
+;TODO: negative attestations - "this is not a word", or links to evidence that it does kind of exist, like "ginigini"
+;TODO: make the "gi -> gya gyu gyo" behavior work
 (defn second-morae [kana]
   (string/join (rest (take (/ (count kana) 2) kana)))
   )
@@ -74,12 +77,15 @@
    :kana      ""
    :attested? (attested? (double-mora romaji))})
 
+(defn mora-pair->items-list [mora-pair]
+  (vec (map romaji->word [mora-pair])))
+
 ; todo: switch this to generate using the kana instead of the romaji
 (defn with-cvc [cv c2]
   (map
     (fn [v2 d] {:vowel v2
                 :dan   d
-                :items (vec (map romaji->word [(str cv c2 v2)]))})
+                :items (mora-pair->items-list (str cv c2 v2))})
       ["a" "i" "u" "e" "o"]
       ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )

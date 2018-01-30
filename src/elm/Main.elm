@@ -189,7 +189,7 @@ secondLevelConsonantView consonantGroup =
         (div [ style [] ] [ (text consonantGroup.gyo) ])
             :: List.map
                 (\vg ->
-                    div [ style [ ( "height", "20px" ), ( "width", "20px" ), ( "border", "1px solid blue" ) ] ] []
+                    div [ style [ ( "height", "20px" ), ( "width", "20px" ) ] ] []
                 )
                 consonantGroup.items
 
@@ -198,14 +198,15 @@ itemView : Word -> Html Msg
 itemView word =
     div
         [ style
-            [ ( "height", "19px" )
-            , ( "width", "38px" )
+            [ ( "height", "100%" )
+            , ( "width", "100%" )
             , ( "display", "inline-block" )
+            , ( "color", "#eee" )
             , ( "background-color"
               , if word.attested then
                     "blue"
                 else
-                    "transparent"
+                    "#999"
               )
             ]
         ]
@@ -222,7 +223,6 @@ secondMoraGroupings consonantGroup =
                         [ ( "height", "38px" )
                         , ( "width", "38px" )
                         , ( "display", "inline-block" )
-                        , ( "border", "1px solid blue" )
                         , ( "font-size", "8px" )
                         ]
                     ]
