@@ -20,7 +20,6 @@ main =
 
 type Page
     = Explorer
-    | Add (Maybe String)
 
 
 type alias Model =
@@ -37,17 +36,16 @@ emptyModel =
     , page = Explorer
     }
 
-
-type WordEvent
-    = Change String
-    | Save String
+-- TODO: negative attestations, with types (unpronounceable, awkward)
+type AttestingEvent
+    = Save String
     | SaveComplete (Result Http.Error Bool)
 
 
 type Msg
     = LoadGojuonGrid (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
-    | Adder WordEvent
+    | Attesting AttestingEvent
 
 
 update msg model =
@@ -61,19 +59,19 @@ update msg model =
         PageChange page ->
             { model | page = page } |> clearNotification |> noCommand
 
-        Adder wordEvent ->
-            case wordEvent of
-                Change word ->
-                    { model | page = Add <| Just word } |> clearNotification |> noCommand
-
+        Attesting e ->
+            case e of
                 Save word ->
-                    ( { model | page = Add Nothing } |> clearNotification, saveWord word )
+                    ( { model | page = Explorer } |> clearNotification, saveWord word )
 
+                -- TODO: don't reload the whole grid here
                 SaveComplete (Err error) ->
-                    { model | notificationText = Just (toString error) } |> noCommand
+                    { model | notificationText = Just (toString error) }
+                        |> withCommand (Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder))
 
                 SaveComplete (Ok _) ->
-                    { model | page = Add Nothing } |> noCommand
+                    model
+                        |> withCommand (Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder))
     )
 
 
@@ -87,10 +85,15 @@ noCommand model =
     ( model, Cmd.none )
 
 
+withCommand : Cmd Msg -> Model -> ( Model, Cmd Msg )
+withCommand =
+    flip (,)
+
+
 saveWord : String -> Cmd Msg
 saveWord word =
     Http.send
-        (SaveComplete >> Adder)
+        (SaveComplete >> Attesting)
         (Http.post ("/api/words/" ++ word ++ "/attest")
             Http.emptyBody
             (Decode.succeed True)
@@ -209,6 +212,7 @@ itemView word =
                     "#999"
               )
             ]
+        , onClick (Attesting <| Save <| word.romaji)
         ]
         [ text word.romaji ]
 
@@ -257,14 +261,6 @@ gojuonView gojuon =
         List.map firstLevelConsonantView gojuon
 
 
-adderView maybeWord =
-    (Html.node "form") [ onSubmit (Adder <| Save <| withDefault "" <| maybeWord) ]
-        [ input [ onInput <| (Change >> Adder), value <| withDefault "" <| maybeWord ] []
-        , button [ type_ "submit" ] [ text "add" ]
-        , button [ type_ "button", onClick (PageChange Explorer) ] [ text "x" ]
-        ]
-
-
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
@@ -276,13 +272,9 @@ pageView model =
                 Nothing ->
                     text "no data"
 
-        Add maybeWord ->
-            adderView maybeWord
-
 
 view model =
     div []
         [ div [] [ text <| Maybe.withDefault "" model.notificationText ]
-        , button [ onClick (PageChange (Add Nothing)) ] [ text "+" ]
         , pageView (model)
         ]

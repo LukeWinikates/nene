@@ -2,6 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
+            [nene.attesting :as attesting]
             [nene.transliterate :as t :refer [transliterate]]))
 
 ;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
@@ -75,7 +76,7 @@
 (defn romaji->word [romaji]
   {:romaji    (double-mora romaji)
    :kana      ""
-   :attested? (attested? (double-mora romaji))})
+   :attested? (or (attested? (double-mora romaji)) (attesting/attested-in? (nene.attesting/get-words) (double-mora romaji)))})
 
 (defn mora-pair->items-list [mora-pair]
   (vec (map romaji->word [mora-pair])))
