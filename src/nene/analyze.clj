@@ -35,7 +35,7 @@
        (map analyze)
        )
   )
-
+; todo: remove this variant
 (defn attested? [romaji]
   (boolean (not-empty (filter #(= (:romaji %) romaji) words))))
 
@@ -64,9 +64,6 @@
            ) (:attributes word)))
   )
 
-(def valid-first-mora
-  (remove #{"ん"} (remove nil? t/hiragana-vector)))
-
 (defn double-mora [half]
   (str half half))
 
@@ -85,7 +82,7 @@
   (let [k1 (t/get-kana c1 v1)
         k2 (t/get-kana c2 v2)]
     (if (and (some? k1) (some? k2))
-      (vec (map kana->word [(str k1 k2)]))
+      (vec (map kana->word [(str k1 k2)])) ; todo: the else part here is a little inelegant
       [])))
 
 
