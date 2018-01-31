@@ -33,6 +33,9 @@
     "o" 4
     ))
 
+(defn get-kana [c v]
+  (get-in hiragana [c (vowel->index v)]))
+
 (defn romaji->mora [romaji]
   (let [c (first romaji)
         v (fnext romaji)]
@@ -61,7 +64,7 @@
       "っ" nil
       (let [idx (index-of hiragana-vector kana)
             gyo (int (/ idx 5))
-            keta (mod idx 5) ;todo: per the wikipedia article, these are called "dan/段"
+            keta (mod idx 5)
             naive (str (nth (keys hiragana) gyo) (nth "aiueo" keta))]
         naive)
       ))

@@ -36,7 +36,11 @@ emptyModel =
     , page = Explorer
     }
 
+
+
 -- TODO: negative attestations, with types (unpronounceable, awkward)
+
+
 type AttestingEvent
     = Save String
     | SaveComplete (Result Http.Error Bool)
@@ -212,9 +216,9 @@ itemView word =
                     "#999"
               )
             ]
-        , onClick (Attesting <| Save <| word.romaji)
+        , onClick (Attesting <| Save <| word.kana)
         ]
-        [ text word.romaji ]
+        [ text word.kana ]
 
 
 secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg

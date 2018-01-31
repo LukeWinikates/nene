@@ -70,32 +70,40 @@
 (defn double-mora [half]
   (str half half))
 
-(defn kana->kana-romaji-map [word]
-  {:kana word :romaji (transliterate word)})
+(defn kana->word [kana]
+  (let [word (double-mora kana)
+        romaji (transliterate word)]
+    {:romaji    romaji
+     :kana      word
+     :attested? (or (attested? romaji)
+                    (attesting/attested-in? (nene.attesting/get-words) romaji))
+     }
+    )
+  )
 
-(defn romaji->word [romaji]
-  {:romaji    (double-mora romaji)
-   :kana      ""
-   :attested? (or (attested? (double-mora romaji)) (attesting/attested-in? (nene.attesting/get-words) (double-mora romaji)))})
+(defn mora-pair->items-list [c1 v1 c2 v2]
+  (let [k1 (t/get-kana c1 v1)
+        k2 (t/get-kana c2 v2)]
+    (if (and (some? k1) (some? k2))
+      (vec (map kana->word [(str k1 k2)]))
+      [])))
 
-(defn mora-pair->items-list [mora-pair]
-  (vec (map romaji->word [mora-pair])))
 
-; todo: switch this to generate using the kana instead of the romaji
-(defn with-cvc [cv c2]
+(defn with-cvc [c1 v1 c2]
   (map
-    (fn [v2 d] {:vowel v2
-                :dan   d
-                :items (mora-pair->items-list (str cv c2 v2))})
-      ["a" "i" "u" "e" "o"]
-      ["ア段" "イ段" "ウ段" "エ段" "オ段"]
+    (fn [v2 d]
+      {:vowel v2
+       :dan   d
+       :items (mora-pair->items-list c1 v1 c2 v2)})
+    ["a" "i" "u" "e" "o"]
+    ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
   )
 
 ;todo: figure out something smart with the mismatch between the consonant lists here, then 'nn' is not nice
-(defn with-first-mora [cv]
+(defn with-first-mora [c v]
   (map
-    (fn [c g] {:consonant c :gyo g :items (vec (with-cvc cv c))})
+    (fn [c2 g] {:consonant c :gyo g :items (vec (with-cvc c v c2))})
     ["", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" "nn"]
     ["ア行", "カ行", "サ行", "タ行", "ナ行", "ハ行", "マ行", "ヤ行", "ラ行", "ワ行", "ガ行", "ザ行", "ダ行", "バ行", "パ行", "ン行"]
     )
@@ -103,7 +111,7 @@
 
 (defn with-starting-consonant [c]
   (map
-    (fn [v d] {:vowel v :dan d :items (vec (with-first-mora (str c v)))})
+    (fn [v d] {:vowel v :dan d :items (vec (with-first-mora c v))})
     ["a" "i" "u" "e" "o"]
     ["ア段" "イ段" "ウ段" "エ段" "オ段"]
     )
