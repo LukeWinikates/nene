@@ -36,18 +36,6 @@
 (defn get-kana [c v]
   (get-in hiragana [c (vowel->index v)]))
 
-(defn romaji->mora [romaji]
-  (let [c (first romaji)
-        v (fnext romaji)]
-    (if (= (count romaji) 1)
-      (get-in hiragana ["" (vowel->index (first romaji))])
-      (get-in hiragana [c (vowel->index v)])
-      )))
-
-(defn romaji->kana [romaji]
-  (case (first romaji)
-    #{\a \i \u \e \o} ()))
-
 (def hiragana-vector
   (vec (apply concat (vals hiragana))))
 
@@ -62,12 +50,15 @@
     (case kana
       "ん" "n"
       "っ" nil
-      (let [idx (index-of hiragana-vector kana)
-            gyo (int (/ idx 5))
-            keta (mod idx 5)
-            naive (str (nth (keys hiragana) gyo) (nth "aiueo" keta))]
-        naive)
-      ))
+      (if-let [idx (index-of hiragana-vector kana)]
+        (let [
+              gyo (int (/ idx 5))
+              keta (mod idx 5)
+              naive (str (nth (keys hiragana) gyo) (nth "aiueo" keta))]
+          naive)
+        nil
+        ))
+    )
   )
 
 ;todo: this still doesn't look right
