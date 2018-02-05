@@ -228,8 +228,8 @@ secondMoraGroupings consonantGroup =
             (\vg ->
                 div
                     [ style
-                        [ ( "height", "15px" )
-                        , ( "width", "15px" )
+                        [ ( "height", "5px" )
+                        , ( "width", "12%" )
                         , ( "display", "inline-block" )
                         , ( "font-size", "8px" )
                         ]
@@ -249,7 +249,7 @@ firstLevelConsonantView consonantGroup =
                         div
                             [ style
                                 [ ( "display", "inline-block" )
-                                , ( "width", "122px" )
+                                , ( "width", "12.5%" )
                                 ]
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
@@ -260,7 +260,7 @@ firstLevelConsonantView consonantGroup =
 
 
 gojuonView gojuon =
-    section [] <|
+    section [ style [ ( "width", "30%" ) ] ] <|
         List.map firstLevelConsonantView gojuon
 
 
