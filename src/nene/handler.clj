@@ -7,7 +7,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [nene.routes.home :refer [home-routes]]
-            [nene.routes.gigo :refer [gigo-routes]]))
+            [nene.routes.words :refer [words-routes]]))
 
 (defn init []
   (println "nene is starting"))
@@ -20,7 +20,7 @@
   (route/not-found "Not Found"))
 
 (def app
-  (-> (routes home-routes gigo-routes app-routes)
+  (-> (routes home-routes words-routes app-routes)
       (handler/site)
       (wrap-json-response)
       (wrap-base-url)))

@@ -8,7 +8,6 @@
 
 (defentity words)
 
-;TODO: implement reasonable caching for this
 (defn get-words []
   (select words))
 
