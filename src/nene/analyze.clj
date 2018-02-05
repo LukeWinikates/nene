@@ -6,7 +6,6 @@
             [nene.transliterate :as t :refer [transliterate]]))
 
 ;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
-;TODO: clean up unused/dead functions and routes
 ;TODO: switch source of truth to database (? - a little harder to work with than the csv file ?)
 ;TODO: from basic kana pair, like ゴロ, generate -> ゴロゴロ, ゴロンゴロン, and ゴロッと, ごろり
 ;TODO: something for single-mora based ones, like sotto, zutto, bou-to
@@ -52,7 +51,7 @@
                                           ["a" "i" "u" "e" "o"]
                                           ["ア段" "イ段" "ウ段" "エ段" "オ段"]
                                           )
-                                        (if-not (= "" c2) (yoon-map (fn [y] {
+                                        (if-not (#{"" "w" "y" "nn"} c2) (yoon-map (fn [y] {
                                                                              :vowel y
                                                                              :dan   y
                                                                              :items (k1k2->items attested-words k1 (str (t/get-kana c2 "i") y))
@@ -82,7 +81,7 @@
                                              ["a" "i" "u" "e" "o"]
                                              ["ア段" "イ段" "ウ段" "エ段" "オ段"]
                                              )
-                                           (if-not (= "" c) (yoon-map
+                                           (if-not (#{"" "w" "y" "nn"} c) (yoon-map
 
                                                               (fn [y] {
                                                                        :vowel y
