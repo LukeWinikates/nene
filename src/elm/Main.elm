@@ -218,7 +218,7 @@ itemView word =
             ]
         , onClick (Attesting <| Save <| word.kana)
         ]
-        [ text word.kana ]
+        []
 
 
 secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
@@ -228,8 +228,8 @@ secondMoraGroupings consonantGroup =
             (\vg ->
                 div
                     [ style
-                        [ ( "height", "38px" )
-                        , ( "width", "38px" )
+                        [ ( "height", "15px" )
+                        , ( "width", "15px" )
                         , ( "display", "inline-block" )
                         , ( "font-size", "8px" )
                         ]
@@ -249,8 +249,7 @@ firstLevelConsonantView consonantGroup =
                         div
                             [ style
                                 [ ( "display", "inline-block" )
-                                , ( "width", "196px" )
-                                , ( "text-align", "center" )
+                                , ( "width", "122px" )
                                 ]
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
