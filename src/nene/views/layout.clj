@@ -7,4 +7,4 @@
      [:title "音々〜ぎたいごぎおんご探険器具・nene, a japanese onomatopoeia explorer"]
      (include-js "/js/main.js")
      (include-css "/css/screen.css")]
-    [:body.container body]))
+    [:body body]))
