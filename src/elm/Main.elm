@@ -38,7 +38,12 @@ saveWord word =
 
 
 type Page
-    = Explorer (Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word)))
+    = Open
+    | WithSection Selection
+
+
+type alias Selection =
+    VowelWiseGrouping (ConsonantWiseGrouping Word)
 
 
 type alias Model =
@@ -52,7 +57,7 @@ emptyModel : Model
 emptyModel =
     { notificationText = Nothing
     , gojuon = Nothing
-    , page = Explorer Nothing
+    , page = Open
     }
 
 
@@ -89,7 +94,7 @@ update msg model =
         Attesting e ->
             case e of
                 Save word ->
-                    ( { model | page = Explorer Nothing }
+                    ( { model | page = Open }
                         |> clearNotification
                     , (saveWord word)
                     )
@@ -246,7 +251,7 @@ firstLevelConsonantView consonantGroup =
                                 , ( "width", "12.5%" )
                                 ]
                             , class "hovers"
-                            , onClick (PageChange <| Explorer <| Just vg)
+                            , onClick (PageChange <| WithSection vg)
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
                     )
@@ -268,7 +273,10 @@ activeRowView grouping =
         )
 
 
+
 -- TODO: separate data structure for tracking the viewport over the 160vw space?
+
+
 leftOffset : Maybe a -> String
 leftOffset m =
     case m of
@@ -279,28 +287,38 @@ leftOffset m =
             "-30vw"
 
 
-gojuonView gojuon maybeActiveRow =
-    section [ style [ ( "display", "flex" ), ( "width", "160vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset maybeActiveRow ) ] ]
+gojuonView gojuon =
+    List.map firstLevelConsonantView gojuon
+
+
+layout : String -> List (Html Msg) -> List (Html Msg) -> Html Msg
+layout leftOffset left center =
+    section [ style [ ( "display", "flex" ), ( "width", "160vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset ) ] ]
         [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
-            List.map firstLevelConsonantView gojuon
+            left
           )
         , section [ style [ ( "width", "80vw" ), ( "display", "inline-block" ) ] ]
-            [ (Maybe.map activeRowView maybeActiveRow)
-                |> Maybe.withDefault (text "")
-            ]
+            center
         ]
+
+
+empty =
+    text ""
 
 
 pageView : Model -> Html Msg
 pageView model =
-    case model.page of
-        Explorer maybeActiveRow ->
-            case model.gojuon of
-                Just gojuon ->
-                    gojuonView gojuon maybeActiveRow
+    case model.gojuon of
+        Just gojuon ->
+            case model.page of
+                Open ->
+                    layout "0" (gojuonView gojuon) [ empty ]
 
-                Nothing ->
-                    text "no data"
+                WithSection selection ->
+                    layout "-40vw" (gojuonView gojuon) [ (activeRowView selection) ]
+
+        Nothing ->
+            text "waiting for data to load..."
 
 
 view model =
