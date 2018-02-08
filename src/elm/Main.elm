@@ -5,17 +5,28 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Dict
-import Json.Decode as Decode exposing (field)
 import Maybe exposing (withDefault)
+import Ajax exposing (..)
 
 
 main =
     Html.program
         { view = view
         , update = update
-        , init = ( emptyModel, Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder) )
+        , init = ( emptyModel, loadGojuonGrid )
         , subscriptions = always Sub.none
         }
+
+
+loadGojuonGrid =
+    Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder)
+
+
+saveWord word =
+    Http.send
+        (SaveComplete >> Attesting)
+    <|
+        attestWord word
 
 
 type Page
@@ -55,27 +66,34 @@ type Msg
 update msg model =
     (case msg of
         LoadGojuonGrid (Err er) ->
-            { model | notificationText = Just <| toString er } |> noCommand
+            { model | notificationText = Just <| toString er }
+                |> noCommand
 
         LoadGojuonGrid (Ok categories) ->
-            { model | notificationText = Nothing, gojuon = Just categories } |> noCommand
+            { model | notificationText = Nothing, gojuon = Just categories }
+                |> noCommand
 
         PageChange page ->
-            { model | page = page } |> clearNotification |> noCommand
+            { model | page = page }
+                |> clearNotification
+                |> noCommand
 
         Attesting e ->
             case e of
                 Save word ->
-                    ( { model | page = Explorer Nothing } |> clearNotification, saveWord word )
+                    ( { model | page = Explorer Nothing }
+                        |> clearNotification
+                    , (saveWord word)
+                    )
 
                 -- TODO: don't reload the whole grid here
                 SaveComplete (Err error) ->
                     { model | notificationText = Just (toString error) }
-                        |> withCommand (Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder))
+                        |> withCommand loadGojuonGrid
 
                 SaveComplete (Ok _) ->
                     model
-                        |> withCommand (Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder))
+                        |> withCommand loadGojuonGrid
     )
 
 
@@ -92,82 +110,6 @@ noCommand model =
 withCommand : Cmd Msg -> Model -> ( Model, Cmd Msg )
 withCommand =
     flip (,)
-
-
-saveWord : String -> Cmd Msg
-saveWord word =
-    Http.send
-        (SaveComplete >> Attesting)
-        (Http.post ("/api/words/" ++ word ++ "/attest")
-            Http.emptyBody
-            (Decode.succeed True)
-        )
-
-
-type alias Word =
-    { kana : String
-    , romaji : String
-    , attested : Bool
-    }
-
-
-type alias Group =
-    { en : String
-    , jp : String
-    , words : List Word
-    }
-
-
-type alias GitaigoByGojuonOrder =
-    List (ConsonantWiseGrouping (ConsonantWiseGrouping Word))
-
-
-type alias ConsonantWiseGrouping a =
-    { consonant : String
-    , gyo : String
-    , items : List (VowelWiseGrouping a)
-    }
-
-
-type alias VowelWiseGrouping a =
-    { vowel : String
-    , dan : String
-    , items : List a
-    }
-
-
-validInitialConsonants =
-    [ "", "k", "s", "t", "n", "h", "m", "y", "r", "w", "g", "z", "d", "b", "p" ]
-
-
-vowelWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (VowelWiseGrouping a)
-vowelWiseGroupingDecoder decoder =
-    Decode.map3 VowelWiseGrouping
-        (field "vowel" Decode.string)
-        (field "dan" Decode.string)
-        (field "items" (Decode.list decoder))
-
-
-consonantWiseGroupingDecoder : Decode.Decoder a -> Decode.Decoder (ConsonantWiseGrouping a)
-consonantWiseGroupingDecoder decoder =
-    Decode.map3 ConsonantWiseGrouping
-        (field "consonant" Decode.string)
-        (field "gyo" Decode.string)
-        (field "items" (Decode.list (vowelWiseGroupingDecoder decoder)))
-
-
-gojuonDecoder : Decode.Decoder GitaigoByGojuonOrder
-gojuonDecoder =
-    Decode.list
-        (consonantWiseGroupingDecoder (consonantWiseGroupingDecoder wordDecoder))
-
-
-wordDecoder : Decode.Decoder Word
-wordDecoder =
-    Decode.map3 Word
-        (field "kana" Decode.string)
-        (field "romaji" Decode.string)
-        (field "attested?" Decode.bool)
 
 
 wordView : Word -> Html Msg
@@ -258,7 +200,11 @@ secondMoraGroupings consonantGroup =
             consonantGroup.items
         )
 
+
+
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
+
+
 detailedSecondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
 detailedSecondMoraGroupings consonantGroup =
     section [ style [ ( "width", "100%" ) ] ]
