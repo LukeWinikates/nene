@@ -29,6 +29,14 @@ saveWord word =
         attestWord word
 
 
+
+-- TODO: so we make it possible to select individual words, and those render all the way to rhe right
+-- TODO: we need to make room in the layout for that word aperture
+-- the overall thing will have a width of 140vw
+-- 40 vw + 80 vw + 20 vw (word aperture)
+-- depending on the mode, the left position will either be 0, or it'll be 20vw
+
+
 type Page
     = Explorer (Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word)))
 
@@ -260,12 +268,23 @@ activeRowView grouping =
         )
 
 
+-- TODO: separate data structure for tracking the viewport over the 160vw space?
+leftOffset : Maybe a -> String
+leftOffset m =
+    case m of
+        Nothing ->
+            "0"
+
+        Just _ ->
+            "-30vw"
+
+
 gojuonView gojuon maybeActiveRow =
-    section [ style [ ( "display", "flex" ) ] ]
-        [ (section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
+    section [ style [ ( "display", "flex" ), ( "width", "160vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset maybeActiveRow ) ] ]
+        [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
             List.map firstLevelConsonantView gojuon
           )
-        , section [ style [ ( "width", "70%" ), ( "display", "inline-block" ) ] ]
+        , section [ style [ ( "width", "80vw" ), ( "display", "inline-block" ) ] ]
             [ (Maybe.map activeRowView maybeActiveRow)
                 |> Maybe.withDefault (text "")
             ]
