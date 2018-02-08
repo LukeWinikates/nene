@@ -44,56 +44,14 @@ body {
     display: inline-block;
 }
 
-.card {
-    display: flex;
-    flex-direction: row;
-    border: 1px solid #555;
-    border-radius: 2px;
-}
-
-.card-label {
-    padding: 20px;
-    font-size: 24px;
-}
-
-.card-content {
-    display: flex;
-    flex-direction: row;
-}
-
-.vertical {
-    writing-mode: vertical-lr;
-}
-
-.pill-container {
-    flex-wrap: wrap;
-}
-
-.pill {
-    border-radius: 5px;
-    border: 1px solid #555;
-    width: 120px;
-    height: 60px;
-    margin: 10px;
-    padding: 10px;
-}
-
-.super-rounded {
-    border-radius: 5px;
-    border: 1px solid #555;
-    margin: 10px;
-    padding: 10px;
-    width: 50%;
-}
-
-.left-portal {
+.portal {
     height: calc(100vh - 110px - 20px);
     overflow-y: scroll;
 }
 
 .card {
-    border-radius: 3px;
-    border-color: gray;
+    border: 1px solid #555;
+    border-radius: 2px;
     padding: 10px;
     margin: 5px;
 }

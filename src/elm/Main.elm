@@ -19,7 +19,7 @@ main =
 
 
 type Page
-    = Explorer (Maybe (ConsonantWiseGrouping (ConsonantWiseGrouping Word)))
+    = Explorer (Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word)))
 
 
 type alias Model =
@@ -201,6 +201,26 @@ secondLevelConsonantView consonantGroup =
                 consonantGroup.items
 
 
+detailedItemView : Word -> Html Msg
+detailedItemView word =
+    div
+        [ style
+            [ ( "height", "100%" )
+            , ( "width", "100%" )
+            , ( "display", "inline-block" )
+            , ( "color", "#eee" )
+            , ( "background-color"
+              , if word.attested then
+                    "blue"
+                else
+                    "#999"
+              )
+            ]
+          --        , onClick (Attesting <| Save <| word.kana)
+        ]
+        [ text word.kana ]
+
+
 itemView : Word -> Html Msg
 itemView word =
     div
@@ -216,7 +236,6 @@ itemView word =
                     "#999"
               )
             ]
-        , onClick (Attesting <| Save <| word.kana)
         ]
         []
 
@@ -239,10 +258,29 @@ secondMoraGroupings consonantGroup =
             consonantGroup.items
         )
 
+-- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
+detailedSecondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
+detailedSecondMoraGroupings consonantGroup =
+    section [ style [ ( "width", "100%" ) ] ]
+        (List.map
+            (\vg ->
+                div
+                    [ style
+                        [ ( "height", "25px" )
+                        , ( "width", "12%" )
+                        , ( "display", "inline-block" )
+                        , ( "font-size", "12px" )
+                        ]
+                    ]
+                    (List.map detailedItemView vg.items)
+            )
+            consonantGroup.items
+        )
+
 
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 firstLevelConsonantView consonantGroup =
-    section [ class "card hovers", onClick (PageChange <| Explorer <| Just consonantGroup) ]
+    section [ class "card" ]
         (div
             []
             [ (text consonantGroup.gyo) ]
@@ -253,6 +291,8 @@ firstLevelConsonantView consonantGroup =
                                 [ ( "display", "inline-block" )
                                 , ( "width", "12.5%" )
                                 ]
+                            , class "hovers"
+                            , onClick (PageChange <| Explorer <| Just vg)
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
                     )
@@ -261,17 +301,25 @@ firstLevelConsonantView consonantGroup =
         )
 
 
-activeRowView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+activeRowView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView grouping =
-    section [] [ text grouping.gyo ]
+    section
+        [ class "card" ]
+        ((div []
+            [ text
+                grouping.dan
+            ]
+         )
+            :: (List.map detailedSecondMoraGroupings grouping.items)
+        )
 
 
 gojuonView gojuon maybeActiveRow =
     section [ style [ ( "display", "flex" ) ] ]
-        [ (section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ], classList [ ( "left-portal", True ) ] ] <|
+        [ (section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
             List.map firstLevelConsonantView gojuon
           )
-        , section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ] ]
+        , section [ style [ ( "width", "70%" ), ( "display", "inline-block" ) ] ]
             [ (Maybe.map activeRowView maybeActiveRow)
                 |> Maybe.withDefault (text "")
             ]
