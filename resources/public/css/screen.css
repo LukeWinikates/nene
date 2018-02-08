@@ -2,6 +2,7 @@ body {
     color: #555;
     font-family: 'Hiragino Kaku Gothic Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 13px;
+    margin:0;
 }
 
 * {
@@ -86,6 +87,22 @@ body {
 }
 
 .left-portal {
-    height: calc(100vh - 110px);
+    height: calc(100vh - 110px - 20px);
     overflow-y: scroll;
+}
+
+.card {
+    border-radius: 3px;
+    border-color: gray;
+    padding: 10px;
+    margin: 5px;
+}
+
+.hovers {
+    cursor: pointer;
+    transition: .3s border-color;
+}
+
+.hovers:hover {
+    border-color: darkgray;
 }

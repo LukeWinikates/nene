@@ -242,8 +242,10 @@ secondMoraGroupings consonantGroup =
 
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 firstLevelConsonantView consonantGroup =
-    section [ style [ ( "border-bottom", "1px solid gray" ) ] ]
-        (div [ onClick (PageChange <| Explorer <| Just consonantGroup) ] [ (text consonantGroup.gyo) ]
+    section [ class "card hovers", onClick (PageChange <| Explorer <| Just consonantGroup) ]
+        (div
+            []
+            [ (text consonantGroup.gyo) ]
             :: (List.map
                     (\vg ->
                         div
