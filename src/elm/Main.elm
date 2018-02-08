@@ -19,7 +19,7 @@ main =
 
 
 type Page
-    = Explorer
+    = Explorer (Maybe (ConsonantWiseGrouping (ConsonantWiseGrouping Word)))
 
 
 type alias Model =
@@ -33,7 +33,7 @@ emptyModel : Model
 emptyModel =
     { notificationText = Nothing
     , gojuon = Nothing
-    , page = Explorer
+    , page = Explorer Nothing
     }
 
 
@@ -66,7 +66,7 @@ update msg model =
         Attesting e ->
             case e of
                 Save word ->
-                    ( { model | page = Explorer } |> clearNotification, saveWord word )
+                    ( { model | page = Explorer Nothing } |> clearNotification, saveWord word )
 
                 -- TODO: don't reload the whole grid here
                 SaveComplete (Err error) ->
@@ -243,7 +243,7 @@ secondMoraGroupings consonantGroup =
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 firstLevelConsonantView consonantGroup =
     section [ style [ ( "border-bottom", "1px solid gray" ) ] ]
-        (div [ style [] ] [ (text consonantGroup.gyo) ]
+        (div [ onClick (PageChange <| Explorer <| Just consonantGroup) ] [ (text consonantGroup.gyo) ]
             :: (List.map
                     (\vg ->
                         div
@@ -259,18 +259,30 @@ firstLevelConsonantView consonantGroup =
         )
 
 
-gojuonView gojuon =
-    section [ style [ ( "width", "30%" ) ] ] <|
-        List.map firstLevelConsonantView gojuon
+activeRowView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+activeRowView grouping =
+    section [] [ text grouping.gyo ]
+
+
+gojuonView gojuon maybeActiveRow =
+    section [ style [ ( "display", "flex" ) ] ]
+        [ (section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ], classList [ ( "left-portal", True ) ] ] <|
+            List.map firstLevelConsonantView gojuon
+          )
+        , section [ style [ ( "width", "30%" ), ( "display", "inline-block" ) ] ]
+            [ (Maybe.map activeRowView maybeActiveRow)
+                |> Maybe.withDefault (text "")
+            ]
+        ]
 
 
 pageView : Model -> Html Msg
 pageView model =
     case model.page of
-        Explorer ->
+        Explorer maybeActiveRow ->
             case model.gojuon of
                 Just gojuon ->
-                    gojuonView gojuon
+                    gojuonView gojuon maybeActiveRow
 
                 Nothing ->
                     text "no data"
