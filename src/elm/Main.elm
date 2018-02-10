@@ -40,6 +40,20 @@ saveWord word =
 type Page
     = Open
     | WithSection Selection
+    | WithSectionAndCards Selection (List Word)
+
+
+addCard : Page -> Word -> Page
+addCard page word =
+    case page of
+        Open ->
+            Open
+
+        WithSection section ->
+            WithSectionAndCards section [ word ]
+
+        WithSectionAndCards section currentWords ->
+            WithSectionAndCards section (currentWords ++ [ word ])
 
 
 type alias Selection =
@@ -156,8 +170,8 @@ secondLevelConsonantView consonantGroup =
                 consonantGroup.items
 
 
-detailedItemView : Word -> Html Msg
-detailedItemView word =
+detailedItemView : Page -> Word -> Html Msg
+detailedItemView currentPage word =
     div
         [ style
             [ ( "height", "100%" )
@@ -171,7 +185,7 @@ detailedItemView word =
                     "#999"
               )
             ]
-          --        , onClick (Attesting <| Save <| word.kana)
+        , onClick (PageChange <| (addCard currentPage word))
         ]
         [ text word.kana ]
 
@@ -218,8 +232,8 @@ secondMoraGroupings consonantGroup =
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 
 
-detailedSecondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
-detailedSecondMoraGroupings consonantGroup =
+detailedSecondMoraGroupings : Page -> ConsonantWiseGrouping Word -> Html Msg
+detailedSecondMoraGroupings page consonantGroup =
     section [ style [ ( "width", "100%" ) ] ]
         (List.map
             (\vg ->
@@ -231,7 +245,7 @@ detailedSecondMoraGroupings consonantGroup =
                         , ( "font-size", "12px" )
                         ]
                     ]
-                    (List.map detailedItemView vg.items)
+                    (List.map (detailedItemView page) vg.items)
             )
             consonantGroup.items
         )
@@ -260,8 +274,8 @@ firstLevelConsonantView consonantGroup =
         )
 
 
-activeRowView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-activeRowView grouping =
+activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+activeRowView page grouping =
     section
         [ class "card" ]
         ((div []
@@ -269,7 +283,7 @@ activeRowView grouping =
                 grouping.dan
             ]
          )
-            :: (List.map detailedSecondMoraGroupings grouping.items)
+            :: (List.map (detailedSecondMoraGroupings page) grouping.items)
         )
 
 
@@ -291,14 +305,22 @@ gojuonView gojuon =
     List.map firstLevelConsonantView gojuon
 
 
-layout : String -> List (Html Msg) -> List (Html Msg) -> Html Msg
-layout leftOffset left center =
+cardsView : List Word -> Html Msg
+cardsView words =
+    div [] <|
+        List.map wordView words
+
+
+layout : String -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
+layout leftOffset left center right =
     section [ style [ ( "display", "flex" ), ( "width", "160vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset ) ] ]
         [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
             left
           )
         , section [ style [ ( "width", "80vw" ), ( "display", "inline-block" ) ] ]
             center
+        , section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ] ]
+            right
         ]
 
 
@@ -312,10 +334,13 @@ pageView model =
         Just gojuon ->
             case model.page of
                 Open ->
-                    layout "0" (gojuonView gojuon) [ empty ]
+                    layout "0" (gojuonView gojuon) [ empty ] [ empty ]
 
                 WithSection selection ->
-                    layout "-40vw" (gojuonView gojuon) [ (activeRowView selection) ]
+                    layout "-40vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ empty ]
+
+                WithSectionAndCards selection cards ->
+                    layout "-80vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
 
         Nothing ->
             text "waiting for data to load..."
