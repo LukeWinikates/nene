@@ -9,6 +9,11 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
+-- TODO: separate data structure for tracking the viewport over the 160vw space?
+-- TODO: negative attestations, with types (unpronounceable, awkward)
+-- TODO: don't reload the whole grid when saving attestation
+-- TODO: provide icons for moving back and forth/resizing the different panels
+
 main =
     Html.program
         { view = view
@@ -23,18 +28,9 @@ loadGojuonGrid =
 
 
 saveWord word =
-    Http.send
-        (SaveComplete >> Attesting)
-    <|
-        attestWord word
-
-
-
--- TODO: so we make it possible to select individual words, and those render all the way to rhe right
--- TODO: we need to make room in the layout for that word aperture
--- the overall thing will have a width of 140vw
--- 40 vw + 80 vw + 20 vw (word aperture)
--- depending on the mode, the left position will either be 0, or it'll be 20vw
+    attestWord word
+        |> Http.send
+            (SaveComplete >> Attesting)
 
 
 type Page
@@ -75,10 +71,6 @@ emptyModel =
     }
 
 
-
--- TODO: negative attestations, with types (unpronounceable, awkward)
-
-
 type AttestingEvent
     = Save String
     | SaveComplete (Result Http.Error Bool)
@@ -113,7 +105,6 @@ update msg model =
                     , (saveWord word)
                     )
 
-                -- TODO: don't reload the whole grid here
                 SaveComplete (Err error) ->
                     { model | notificationText = Just (toString error) }
                         |> withCommand loadGojuonGrid
@@ -285,20 +276,6 @@ activeRowView page grouping =
          )
             :: (List.map (detailedSecondMoraGroupings page) grouping.items)
         )
-
-
-
--- TODO: separate data structure for tracking the viewport over the 160vw space?
-
-
-leftOffset : Maybe a -> String
-leftOffset m =
-    case m of
-        Nothing ->
-            "0"
-
-        Just _ ->
-            "-30vw"
 
 
 gojuonView gojuon =
