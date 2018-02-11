@@ -1,10 +1,14 @@
 (ns nene.views.layout
-  (:require [hiccup.page :refer [html5 include-css include-js]]))
+  (:require [hiccup.page :refer [html5 include-css include-js]]
+            [garden.core :refer [css]]
+            [nene.views.styles :refer [styles]]))
 
 (defn common [& body]
   (html5
     [:head
      [:title "音々〜ぎたいごぎおんご探険器具・nene, a japanese onomatopoeia explorer"]
      (include-js "/js/main.js")
-     (include-css "/css/screen.css")]
+     (include-css "/css/screen.css")
+     [:style (css styles)]
+     ]
     [:body body]))

@@ -2,11 +2,11 @@ body {
     color: #555;
     font-family: 'Hiragino Kaku Gothic Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 13px;
-    margin:0;
+    margin: 0;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .container {
@@ -32,12 +32,12 @@ body {
 }
 
 .banner h1 {
-    margin:0;
+    margin: 0;
     text-align: center;
 }
 
 .banner h3 {
-    margin:5px 0;
+    margin: 5px 0;
 }
 
 .banner-block {
@@ -54,13 +54,4 @@ body {
     border-radius: 2px;
     padding: 10px;
     margin: 5px;
-}
-
-.hovers {
-    cursor: pointer;
-    transition: .3s border-color;
-}
-
-.hovers:hover {
-    border-color: darkgray;
 }

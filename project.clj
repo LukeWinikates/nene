@@ -11,6 +11,7 @@
                  [org.postgresql/postgresql "42.2.0"]
                  [korma "0.4.3"]
                  [ragtime "0.7.2"]
+                 [garden "1.3.3"]
                  ]
   :plugins [[lein-ring "0.8.12"]]
   :aliases {"migrate"  ["run" "-m" "nene.migrate/migrate"]
