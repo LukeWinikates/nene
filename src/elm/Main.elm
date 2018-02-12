@@ -13,6 +13,10 @@ import Ajax exposing (..)
 -- TODO: negative attestations, with types (unpronounceable, awkward)
 -- TODO: don't reload the whole grid when saving attestation
 -- TODO: provide icons for moving back and forth/resizing the different panels
+-- TODO: card UI:
+-- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
+-- tags/feelings (freeform words? allow for hashtags?)
+
 
 main =
     Html.program
@@ -164,18 +168,7 @@ secondLevelConsonantView consonantGroup =
 detailedItemView : Page -> Word -> Html Msg
 detailedItemView currentPage word =
     div
-        [ style
-            [ ( "height", "100%" )
-            , ( "width", "100%" )
-            , ( "display", "inline-block" )
-            , ( "color", "#eee" )
-            , ( "background-color"
-              , if word.attested then
-                    "blue"
-                else
-                    "#999"
-              )
-            ]
+        [ classList [ ( "word-square", True ), ( "attested", word.attested ) ]
         , onClick (PageChange <| (addCard currentPage word))
         ]
         [ text word.kana ]
@@ -184,19 +177,7 @@ detailedItemView currentPage word =
 itemView : Word -> Html Msg
 itemView word =
     div
-        [ style
-            [ ( "height", "100%" )
-            , ( "width", "100%" )
-            , ( "display", "inline-block" )
-            , ( "color", "#eee" )
-            , ( "background-color"
-              , if word.attested then
-                    "blue"
-                else
-                    "#999"
-              )
-            ]
-        ]
+        [ classList [ ( "word-square", True ), ( "attested", word.attested ) ] ]
         []
 
 
