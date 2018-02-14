@@ -16,6 +16,7 @@ import Ajax exposing (..)
 -- TODO: card UI:
 -- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
 -- tags/feelings (freeform words? allow for hashtags?)
+-- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 
 
 main =
@@ -181,10 +182,21 @@ secondLevelConsonantView consonantGroup =
                 consonantGroup.items
 
 
+cssClassFromWord : Word -> ( String, Bool )
+cssClassFromWord word =
+    (flip (,)) True <|
+        case word.attestation of
+            DictionaryWord ->
+                "attested-dictionary-word"
+
+            _ ->
+                ""
+
+
 detailedItemView : Page -> Word -> Html Msg
 detailedItemView currentPage word =
     div
-        [ classList [ ( "word-square", True ), ( "attested", word.attested ), ( "hovers", True ) ]
+        [ classList [ ( "word-square", True ), (cssClassFromWord word), ( "hovers", True ) ]
         , onClick (PageChange <| (addCard currentPage word))
         ]
         [ text word.kana ]
@@ -193,7 +205,7 @@ detailedItemView currentPage word =
 itemView : Word -> Html Msg
 itemView word =
     div
-        [ classList [ ( "word-square", True ), ( "attested", word.attested ) ] ]
+        [ classList [ ( "word-square", True ), (cssClassFromWord word) ] ]
         []
 
 
@@ -215,9 +227,6 @@ secondMoraGroupings consonantGroup =
             consonantGroup.items
         )
 
-
-
--- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 
 
 detailedSecondMoraGroupings : Page -> ConsonantWiseGrouping Word -> Html Msg

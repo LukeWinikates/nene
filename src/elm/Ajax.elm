@@ -12,10 +12,19 @@ attestWord word =
     )
 
 
+type Attestation
+    = DictionaryWord
+    | InternetExamples
+    | Unattested
+    | HardToPronounce
+    | Unlikely
+    | Impossible
+
+
 type alias Word =
     { kana : String
     , romaji : String
-    , attested : Bool
+    , attestation : Attestation
     }
 
 
@@ -66,9 +75,46 @@ gojuonDecoder =
         (consonantWiseGroupingDecoder (consonantWiseGroupingDecoder wordDecoder))
 
 
+stringToAttestation : String -> Maybe Attestation
+stringToAttestation s =
+    case s of
+        "dictionary-word" ->
+            Just DictionaryWord
+
+        "internet-examples" ->
+            Just InternetExamples
+
+        "unattested" ->
+            Just Unattested
+
+        "hard-to-pronounce" ->
+            Just HardToPronounce
+
+        "unlikely" ->
+            Just Unlikely
+
+        "impossible" ->
+            Just Impossible
+
+        _ ->
+            Nothing
+
+
+attestationDecoder : Decode.Decoder Attestation
+attestationDecoder =
+    Decode.string
+        |> (Decode.andThen
+                (stringToAttestation
+                    >> ((Maybe.map Decode.succeed)
+                            >> (Maybe.withDefault (Decode.fail "unrecognized value"))
+                       )
+                )
+           )
+
+
 wordDecoder : Decode.Decoder Word
 wordDecoder =
     Decode.map3 Word
         (field "kana" Decode.string)
         (field "romaji" Decode.string)
-        (field "attested?" Decode.bool)
+        (field "attestation" attestationDecoder)

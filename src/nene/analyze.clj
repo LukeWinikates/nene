@@ -19,7 +19,7 @@
         romaji (transliterate word)]
     {:romaji    romaji
      :kana      word
-     :attested? (attesting/attested-in? attested-words romaji)
+     :attestation (if (attesting/attested-in? attested-words romaji) "dictionary-word" "unattested")
      }
     )
   )

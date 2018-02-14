@@ -23,6 +23,6 @@
                    :height           "100%"
                    :width            "100%"
                    :display          "inline-block"}
-    [:&.attested {:background-color blue-sapphire
+    [:&.attested-dictionary-word {:background-color blue-sapphire
                   :color            lumber}]]]
   )
