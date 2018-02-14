@@ -311,10 +311,10 @@ pageView model =
                     layout "0" (gojuonView gojuon) [ empty ] [ empty ]
 
                 WithSection selection ->
-                    layout "-40vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ empty ]
+                    layout "-20vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ empty ]
 
                 WithSectionAndCards selection cards ->
-                    layout "-40vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
+                    layout "-30vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
 
         Nothing ->
             text "waiting for data to load..."
