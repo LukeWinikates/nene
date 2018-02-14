@@ -17,6 +17,10 @@ import Ajax exposing (..)
 -- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
 -- tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
+-- TODO: refactor out the duplication in the various gojuon subviews
+-- TODO: introduce routing so refreshes work
+-- TODO: do something for the viewport navigation/resizing
+-- TODO: when something is attested, apply change right away and add a http request to a queue
 
 
 main =
@@ -226,7 +230,6 @@ secondMoraGroupings consonantGroup =
             )
             consonantGroup.items
         )
-
 
 
 detailedSecondMoraGroupings : Page -> ConsonantWiseGrouping Word -> Html Msg
