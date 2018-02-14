@@ -84,6 +84,17 @@ type Msg
     = LoadGojuonGrid (Result Http.Error GitaigoByGojuonOrder)
     | PageChange Page
     | Attesting AttestingEvent
+    | CloseWord Word
+
+
+closeWord : Word -> Page -> Page
+closeWord word page =
+    case page of
+        WithSectionAndCards section cards ->
+            WithSectionAndCards section (List.filter ((/=) word) cards)
+
+        _ ->
+            page
 
 
 update msg model =
@@ -99,6 +110,10 @@ update msg model =
         PageChange page ->
             { model | page = page }
                 |> clearNotification
+                |> noCommand
+
+        CloseWord word ->
+            { model | page = closeWord word model.page }
                 |> noCommand
 
         Attesting e ->
@@ -136,9 +151,10 @@ withCommand =
 
 wordView : Word -> Html Msg
 wordView word =
-    div [ class "pill" ]
+    div [ class "card" ]
         [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
         , em [] [ text word.romaji ]
+        , button [ onClick (CloseWord word), class "hovers", style [ ( "float", "right" ) ] ] [ text "x" ]
         ]
 
 
@@ -168,7 +184,7 @@ secondLevelConsonantView consonantGroup =
 detailedItemView : Page -> Word -> Html Msg
 detailedItemView currentPage word =
     div
-        [ classList [ ( "word-square", True ), ( "attested", word.attested ) ]
+        [ classList [ ( "word-square", True ), ( "attested", word.attested ), ( "hovers", True ) ]
         , onClick (PageChange <| (addCard currentPage word))
         ]
         [ text word.kana ]
@@ -271,13 +287,13 @@ cardsView words =
 
 layout : String -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
 layout leftOffset left center right =
-    section [ style [ ( "display", "flex" ), ( "width", "160vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset ) ] ]
+    section [ style [ ( "display", "flex" ), ( "width", "120vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset ) ] ]
         [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
             left
           )
-        , section [ style [ ( "width", "80vw" ), ( "display", "inline-block" ) ] ]
+        , section [ style [ ( "width", "60vw" ), ( "display", "inline-block" ) ] ]
             center
-        , section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ] ]
+        , section [ style [ ( "width", "20vw" ), ( "display", "inline-block" ) ] ]
             right
         ]
 
@@ -298,7 +314,7 @@ pageView model =
                     layout "-40vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ empty ]
 
                 WithSectionAndCards selection cards ->
-                    layout "-80vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
+                    layout "-40vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
 
         Nothing ->
             text "waiting for data to load..."

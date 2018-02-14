@@ -6,9 +6,9 @@
 (def steel-teal "#627C8C")
 (def blue-sapphire "#015C81")
 (def jelly-bean-orange "#DD614A")
-(def salmon "#F48668")
+(def salmon "#F48668") ; internet usage attestation
 (def lumber "#FFE5D4")
-(def charcoal "#36494E")
+(def charcoal "#36494E") ; negative attestation
 (def pastel-gray "#CAD2C5")
 
 (def styles
