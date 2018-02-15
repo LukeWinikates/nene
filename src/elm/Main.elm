@@ -21,7 +21,7 @@ import Ajax exposing (..)
 -- TODO: introduce routing so refreshes work
 -- TODO: do something for the viewport navigation/resizing
 -- TODO: when something is attested, apply change right away and add a http request to a queue
-
+-- TODO: attestation should use kana
 
 main =
     Html.program
@@ -37,7 +37,7 @@ loadGojuonGrid =
 
 
 saveWord word =
-    attestWord word
+    attestWord word.romaji
         |> Http.send
             (SaveComplete >> Attesting)
 
@@ -81,7 +81,7 @@ emptyModel =
 
 
 type AttestingEvent
-    = Save String
+    = Save Word
     | SaveComplete (Result Http.Error Bool)
 
 
@@ -100,6 +100,16 @@ closeWord word page =
 
         _ ->
             page
+
+-- TODO: this should update the model in place (maybe the word needs to know its gyo/dan/gyo/dan location to facilitate that)
+attest : Model -> Word -> Model
+attest model word =
+    case model.gojuon of
+        Just gojuon ->
+            model
+
+        _ ->
+            model
 
 
 update msg model =
@@ -124,7 +134,7 @@ update msg model =
         Attesting e ->
             case e of
                 Save word ->
-                    ( { model | page = Open }
+                    ( (attest model word)
                         |> clearNotification
                     , (saveWord word)
                     )
@@ -154,12 +164,26 @@ withCommand =
     flip (,)
 
 
+attestationIndicator : Word -> Html Msg
+attestationIndicator word =
+    case word.attestation of
+        DictionaryWord ->
+            div [] []
+
+        Unattested ->
+            button [ class "hovers", onClick (Attesting (Save word)) ] [ text "attest" ]
+
+        _ ->
+            empty
+
+
 wordView : Word -> Html Msg
 wordView word =
     div [ class "card" ]
         [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
         , em [] [ text word.romaji ]
         , button [ onClick (CloseWord word), class "hovers", style [ ( "float", "right" ) ] ] [ text "x" ]
+        , attestationIndicator word
         ]
 
 
