@@ -11,7 +11,6 @@ import Ajax exposing (..)
 
 -- TODO: separate data structure for tracking the viewport over the 160vw space?
 -- TODO: negative attestations, with types (unpronounceable, awkward)
--- TODO: don't reload the whole grid when saving attestation
 -- TODO: provide icons for moving back and forth/resizing the different panels
 -- TODO: card UI:
 -- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
@@ -20,8 +19,8 @@ import Ajax exposing (..)
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
 -- TODO: do something for the viewport navigation/resizing
--- TODO: when something is attested, apply change right away and add a http request to a queue
 -- TODO: attestation should use kana
+
 
 main =
     Html.program
@@ -62,7 +61,9 @@ addCard page word =
 
 
 type alias Selection =
-    VowelWiseGrouping (ConsonantWiseGrouping Word)
+    { gyo : String
+    , dan : String
+    }
 
 
 type alias Model =
@@ -101,15 +102,84 @@ closeWord word page =
         _ ->
             page
 
--- TODO: this should update the model in place (maybe the word needs to know its gyo/dan/gyo/dan location to facilitate that)
-attest : Model -> Word -> Model
-attest model word =
-    case model.gojuon of
-        Just gojuon ->
-            model
+
+danEq x =
+    .dan >> ((==) x)
+
+
+gyoEq x =
+    .gyo >> ((==) x)
+
+
+swapItems f x =
+    { x | items = f (x.items) }
+
+
+replaceIf : (a -> Bool) -> (a -> a) -> List a -> List a
+replaceIf pred f list =
+    List.map
+        (\a ->
+            if pred a then
+                (f a)
+            else
+                a
+        )
+        list
+
+
+replaceCard : Page -> Word -> Page
+replaceCard page word =
+    case page of
+        WithSectionAndCards s c ->
+            WithSectionAndCards s (replaceIf (.kana >> ((==) word.kana)) (always word) c)
 
         _ ->
-            model
+            page
+
+
+attest : Model -> Word -> Model
+attest model word =
+    let
+        newWord =
+            { word | attestation = DictionaryWord }
+    in
+        case word.location of
+            [ g1, d1, g2, d2 ] ->
+                case model.gojuon of
+                    Just gojuon ->
+                        { model
+                            | page = replaceCard model.page newWord
+                            , gojuon =
+                                Just
+                                    (replaceIf
+                                        (gyoEq g1)
+                                        (swapItems
+                                            (replaceIf
+                                                (danEq d1)
+                                                (swapItems
+                                                    (replaceIf
+                                                        (gyoEq g2)
+                                                        (swapItems
+                                                            (replaceIf
+                                                                (danEq d2)
+                                                                (swapItems
+                                                                    (always [ newWord ])
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                        gojuon
+                                    )
+                        }
+
+                    _ ->
+                        model
+
+            _ ->
+                model
 
 
 update msg model =
@@ -145,7 +215,7 @@ update msg model =
 
                 SaveComplete (Ok _) ->
                     model
-                        |> withCommand loadGojuonGrid
+                        |> noCommand
     )
 
 
@@ -289,13 +359,24 @@ firstLevelConsonantView consonantGroup =
                                 , ( "width", "12.5%" )
                                 ]
                             , class "hovers"
-                            , onClick (PageChange <| WithSection vg)
+                            , onClick (PageChange <| WithSection { gyo = consonantGroup.gyo, dan = vg.dan })
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
                     )
                     consonantGroup.items
                )
         )
+
+
+getVowelWiseGrouping : GitaigoByGojuonOrder -> Selection -> Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word))
+getVowelWiseGrouping gojuon selection =
+    gojuon
+        |> List.filter (gyoEq selection.gyo)
+        |> List.head
+        |> Maybe.map .items
+        |> Maybe.withDefault []
+        |> List.filter (danEq selection.dan)
+        |> List.head
 
 
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
@@ -347,10 +428,10 @@ pageView model =
                     layout "0" (gojuonView gojuon) [ empty ] [ empty ]
 
                 WithSection selection ->
-                    layout "-20vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ empty ]
+                    layout "-20vw" (gojuonView gojuon) [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ] [ empty ]
 
                 WithSectionAndCards selection cards ->
-                    layout "-30vw" (gojuonView gojuon) [ (activeRowView model.page selection) ] [ cardsView cards ]
+                    layout "-30vw" (gojuonView gojuon) [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ] [ cardsView cards ]
 
         Nothing ->
             text "waiting for data to load..."

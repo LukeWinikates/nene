@@ -25,6 +25,7 @@ type alias Word =
     { kana : String
     , romaji : String
     , attestation : Attestation
+    , location : List String
     }
 
 
@@ -114,7 +115,8 @@ attestationDecoder =
 
 wordDecoder : Decode.Decoder Word
 wordDecoder =
-    Decode.map3 Word
+    Decode.map4 Word
         (field "kana" Decode.string)
         (field "romaji" Decode.string)
         (field "attestation" attestationDecoder)
+        (field "location" (Decode.list Decode.string))

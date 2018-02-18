@@ -14,11 +14,12 @@
 (defn double-mora [half]
   (str half half))
 
-(defn kana->word [attested-words kana]
+(defn kana->word [attested-words kana g1 d1 g2 d2]
   (let [word (double-mora kana)
         romaji (transliterate word)]
     {:romaji    romaji
      :kana      word
+     :location [g1 d1 g2 d2]
      :attestation (if (attesting/attested-in? attested-words romaji) "dictionary-word" "unattested")
      }
     )
@@ -32,21 +33,22 @@
   )
 
 
-(defn k1k2->items [attested-words k1 k2]
+(defn k1k2->items [attested-words k1 k2 g1 d1 g2 d2]
   (if (every? some? [k1 k2])
-    (vec (map (partial kana->word attested-words) [(str k1 k2)]))
+    [(kana->word attested-words (str k1 k2) g1 d1 g2 d2)]
     []
-    ))
+    )
+  )
 
-(defn with-k1 [attested-words k1]
+(defn with-k1 [attested-words k1 g1 d1]
   (map
-    (fn [c2 g] {:consonant c2
-                :gyo       g
+    (fn [c2 g2] {:consonant c2
+                :gyo       g2
                 :items     (vec (concat (map
-                                          (fn [v2 d]
+                                          (fn [v2 d2]
                                             {:vowel v2
-                                             :dan   d
-                                             :items (k1k2->items attested-words k1 (t/get-kana c2 v2))
+                                             :dan   d2
+                                             :items (k1k2->items attested-words k1 (t/get-kana c2 v2) g1 d1 g2 d2)
                                              })
                                           ["a" "i" "u" "e" "o"]
                                           ["ア段" "イ段" "ウ段" "エ段" "オ段"]
@@ -54,7 +56,7 @@
                                         (if-not (#{"" "w" "y" "nn"} c2) (yoon-map (fn [y] {
                                                                              :vowel y
                                                                              :dan   y
-                                                                             :items (k1k2->items attested-words k1 (str (t/get-kana c2 "i") y))
+                                                                             :items (k1k2->items attested-words k1 (str (t/get-kana c2 "i") y) g1 d1 g2 y)
                                                                              })
                                                                     ) [])))
                 }
@@ -76,7 +78,7 @@
                                              (fn [v d] {
                                                         :vowel v
                                                         :dan   d
-                                                        :items (vec (with-k1 attested-words (t/get-kana c v)))
+                                                        :items (vec (with-k1 attested-words (t/get-kana c v) g d))
                                                         })
                                              ["a" "i" "u" "e" "o"]
                                              ["ア段" "イ段" "ウ段" "エ段" "オ段"]
@@ -86,7 +88,7 @@
                                                               (fn [y] {
                                                                        :vowel y
                                                                        :dan   y
-                                                                       :items (vec (with-k1 attested-words (str (t/get-kana c "i") y)))
+                                                                       :items (vec (with-k1 attested-words (str (t/get-kana c "i") y) g y))
                                                                        })
                                                               ) [])))
                    }
