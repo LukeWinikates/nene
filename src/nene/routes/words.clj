@@ -7,6 +7,9 @@
 
 (defroutes words-routes
            (GET "/api/words" [] (response (a/variants)))
-           (POST "/api/words/:word/attest" [word] (response (nene.attesting/save-word word)))
+           (POST "/api/attestations" request (response
+                                               (nene.attesting/save-word
+                                                 (get-in request [:body "kana"])
+                                                 (get-in request [:body "attestation-type"]))))
            )
 

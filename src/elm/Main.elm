@@ -11,12 +11,10 @@ import Ajax exposing (..)
 
 -- TODO: negative attestations, with types (unpronounceable, awkward)
 -- TODO: card UI:
--- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
--- tags/feelings (freeform words? allow for hashtags?)
--- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
+-- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
--- TODO: attestation should use kana
+-- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 
 
 main =
@@ -52,8 +50,8 @@ loadGojuonGrid =
     Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder)
 
 
-saveWord word =
-    attestWord word.romaji
+saveWord word attestationType =
+    attestWord word.kana attestationType
         |> Http.send
             (SaveComplete >> Attesting)
 
@@ -91,7 +89,7 @@ emptyModel =
 
 
 type AttestingEvent
-    = Save Word
+    = Save Word Attestation
     | SaveComplete (Result Http.Error Bool)
 
 
@@ -216,10 +214,10 @@ update msg model =
 
         Attesting e ->
             case e of
-                Save word ->
+                Save word attestationType ->
                     ( (attest model word)
                         |> clearNotification
-                    , (saveWord word)
+                    , (saveWord word attestationType)
                     )
 
                 SaveComplete (Err error) ->
@@ -254,7 +252,7 @@ attestationIndicator word =
             div [] []
 
         Unattested ->
-            button [ class "hovers", onClick (Attesting (Save word)) ] [ text "attest" ]
+            button [ class "hovers", onClick (Attesting (Save word DictionaryWord)) ] [ text "attest" ]
 
         _ ->
             empty

@@ -20,7 +20,7 @@
     {:romaji    romaji
      :kana      word
      :location [g1 d1 g2 d2]
-     :attestation (if (attesting/attested-in? attested-words romaji) "dictionary-word" "unattested")
+     :attestation (if (attesting/attested-in? attested-words word) "dictionary-word" "unattested")
      }
     )
   )

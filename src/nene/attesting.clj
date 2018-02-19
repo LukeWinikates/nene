@@ -1,21 +1,24 @@
 (ns nene.attesting
   (:require [korma.db :refer [defdb postgres]]
-            [korma.core :refer [defentity insert values where select]]))
+            [korma.core :refer [defentity insert update values where select set-fields]]))
 
 (defdb db (postgres {:db "nene"}))
 
-(declare words)
+(declare attestations)
 
-(defentity words)
+(defentity attestations)
 
 (defn get-words []
-  (select words))
+  (select attestations))
 
-(defn attested-in? [words word]
-  (not (empty? (filter #(= (:word %) word) words))))
+(defn attested-in? [words kana]
+  (not (empty? (filter #(= (:kana %) kana) words))))
 
-(defn save-word [word]
-  (if (not (attested-in? (select words) word))
-    (insert words
-            (values {:word word}))
-    ))
+(defn save-word [kana type]
+  (if (not (attested-in? (select attestations) kana))
+    (insert attestations
+            (values {:kana kana :type type}))
+    (update attestations
+            (set-fields {:type type})
+            (where {:kana kana})))
+    )

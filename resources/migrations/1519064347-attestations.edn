@@ -1,0 +1,2 @@
+{:up   ["CREATE TABLE attestations (kana text NOT NULL, type text NOT NULL)"]
+ :down ["DROP TABLE attestations"]}

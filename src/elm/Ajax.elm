@@ -2,14 +2,43 @@ module Ajax exposing (..)
 
 import Http exposing (Request)
 import Json.Decode as Decode exposing (field)
+import Json.Encode as Encode
 
 
-attestWord : String -> Request Bool
-attestWord word =
-    (Http.post ("/api/words/" ++ word ++ "/attest")
-        Http.emptyBody
+attestWord : String -> Attestation -> Request Bool
+attestWord kana attestation =
+    (Http.post ("/api/attestations")
+        (Http.jsonBody
+            (Encode.object
+                [ ( "kana", (Encode.string kana) )
+                , ( "attestation-type", (Encode.string <| attestationToString attestation) )
+                ]
+            )
+        )
         (Decode.succeed True)
     )
+
+
+attestationToString : Attestation -> String
+attestationToString attestation =
+    case attestation of
+        DictionaryWord ->
+            "dictionary-word"
+
+        InternetExamples ->
+            "internet-examples"
+
+        Unattested ->
+            "unattested"
+
+        HardToPronounce ->
+            "hard-to-pronounce"
+
+        Unlikely ->
+            "unlikely"
+
+        Impossible ->
+            "impossible"
 
 
 type Attestation
