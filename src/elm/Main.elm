@@ -9,7 +9,6 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
--- TODO: separate data structure for tracking the viewport over the 160vw space?
 -- TODO: negative attestations, with types (unpronounceable, awkward)
 -- TODO: provide icons for moving back and forth/resizing the different panels
 -- TODO: card UI:
@@ -31,6 +30,26 @@ main =
         }
 
 
+type ViewportPosition
+    = Left
+    | Middle
+    | Right
+
+
+type alias PageState =
+    { viewportPosition : ViewportPosition
+    , selection : Maybe Selection
+    , words : List Word
+    }
+
+
+defaultPageState =
+    { viewportPosition = Left
+    , selection = Nothing
+    , words = []
+    }
+
+
 loadGojuonGrid =
     Http.send LoadGojuonGrid (Http.get "/api/words" gojuonDecoder)
 
@@ -42,22 +61,14 @@ saveWord word =
 
 
 type Page
-    = Open
-    | WithSection Selection
-    | WithSectionAndCards Selection (List Word)
+    = Explorer PageState
 
 
 addCard : Page -> Word -> Page
 addCard page word =
     case page of
-        Open ->
-            Open
-
-        WithSection section ->
-            WithSectionAndCards section [ word ]
-
-        WithSectionAndCards section currentWords ->
-            WithSectionAndCards section (currentWords ++ [ word ])
+        Explorer pageState ->
+            Explorer { pageState | words = pageState.words ++ [ word ], viewportPosition = Right }
 
 
 type alias Selection =
@@ -77,7 +88,7 @@ emptyModel : Model
 emptyModel =
     { notificationText = Nothing
     , gojuon = Nothing
-    , page = Open
+    , page = Explorer defaultPageState
     }
 
 
@@ -96,11 +107,8 @@ type Msg
 closeWord : Word -> Page -> Page
 closeWord word page =
     case page of
-        WithSectionAndCards section cards ->
-            WithSectionAndCards section (List.filter ((/=) word) cards)
-
-        _ ->
-            page
+        Explorer pageState ->
+            Explorer { pageState | words = (List.filter ((/=) word) pageState.words) }
 
 
 danEq x =
@@ -130,11 +138,8 @@ replaceIf pred f list =
 replaceCard : Page -> Word -> Page
 replaceCard page word =
     case page of
-        WithSectionAndCards s c ->
-            WithSectionAndCards s (replaceIf (.kana >> ((==) word.kana)) (always word) c)
-
-        _ ->
-            page
+        Explorer pageState ->
+            Explorer { pageState | words = (replaceIf (.kana >> ((==) word.kana)) (always word) pageState.words) }
 
 
 attest : Model -> Word -> Model
@@ -359,7 +364,7 @@ firstLevelConsonantView consonantGroup =
                                 , ( "width", "12.5%" )
                                 ]
                             , class "hovers"
-                            , onClick (PageChange <| WithSection { gyo = consonantGroup.gyo, dan = vg.dan })
+                            , onClick (PageChange <| Explorer { defaultPageState | selection = Just { gyo = consonantGroup.gyo, dan = vg.dan }, viewportPosition = Middle })
                             ]
                             (text vg.dan :: (List.map secondMoraGroupings vg.items))
                     )
@@ -433,25 +438,34 @@ empty =
     text ""
 
 
+leftOffsetForPageState : PageState -> String
+leftOffsetForPageState pageState =
+    case pageState.viewportPosition of
+        Left ->
+            "0"
+
+        Middle ->
+            "-20vw"
+
+        Right ->
+            "-30vw"
+
+
 pageView : Model -> Html Msg
 pageView model =
     case model.gojuon of
         Just gojuon ->
             case model.page of
-                Open ->
-                    layout "0" (gojuonView gojuon) [ empty ] [ empty ]
-
-                WithSection selection ->
-                    layout "-20vw"
+                Explorer pageState ->
+                    layout
+                        (leftOffsetForPageState pageState)
                         (gojuonView gojuon)
-                        [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ]
-                        [ empty ]
-
-                WithSectionAndCards selection cards ->
-                    layout "-30vw"
-                        (gojuonView gojuon)
-                        [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ]
-                        [ cardsView cards ]
+                        [ pageState.selection
+                            |> Maybe.andThen (getVowelWiseGrouping gojuon)
+                            |> Maybe.map (activeRowView model.page)
+                            |> Maybe.withDefault empty
+                        ]
+                        [ cardsView pageState.words ]
 
         Nothing ->
             text "waiting for data to load..."
