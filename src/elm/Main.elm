@@ -10,14 +10,12 @@ import Ajax exposing (..)
 
 
 -- TODO: negative attestations, with types (unpronounceable, awkward)
--- TODO: provide icons for moving back and forth/resizing the different panels
 -- TODO: card UI:
 -- attestation: dictionary-word internet-examples unattested hard-to-pronounce unlikely impossible
 -- tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
--- TODO: do something for the viewport navigation/resizing
 -- TODO: attestation should use kana
 
 
@@ -102,6 +100,7 @@ type Msg
     | PageChange Page
     | Attesting AttestingEvent
     | CloseWord Word
+    | ChangeViewport ViewportPosition
 
 
 closeWord : Word -> Page -> Page
@@ -204,6 +203,15 @@ update msg model =
 
         CloseWord word ->
             { model | page = closeWord word model.page }
+                |> noCommand
+
+        ChangeViewport position ->
+            { model
+                | page =
+                    case model.page of
+                        Explorer pageState ->
+                            Explorer { pageState | viewportPosition = position }
+            }
                 |> noCommand
 
         Attesting e ->
@@ -420,15 +428,15 @@ layout leftOffset left center right =
         , class "layout"
         ]
         [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
-            (header [ class "left-header" ] [ text "All" ])
+            (header [ class "left-header hovers", onClick (ChangeViewport Left) ] [ text "All" ])
                 :: left
           )
         , section [ style [ ( "width", "60vw" ), ( "display", "inline-block" ) ] ]
-            ((header [ class "center-header" ] [ text "Selected" ])
+            ((header [ class "center-header hovers", onClick (ChangeViewport Middle) ] [ text "Selected" ])
                 :: center
             )
         , section [ style [ ( "width", "20vw" ), ( "display", "inline-block" ) ] ]
-            ((header [ class "right-header" ] [ text "Words" ])
+            ((header [ class "right-header hovers", onClick (ChangeViewport Right) ] [ text "Words" ])
                 :: right
             )
         ]
