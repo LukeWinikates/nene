@@ -9,13 +9,14 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
+-- TODO: button panel UI for attestation types
 -- TODO: negative attestations, with types (unpronounceable, awkward)
 -- TODO: card UI:
+-- TODO: indicate subtype of dictionary word - gitaigo, giseigo
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
-
 
 main =
     Html.program

@@ -5,8 +5,9 @@
             [nene.attesting :as attesting]
             [nene.transliterate :as t :refer [transliterate]]))
 
+;TODO: switch attested-in? to load the word's attestation instead of return boolean
+;TODO: try enums again
 ;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
-;TODO: switch source of truth to database (? - a little harder to work with than the csv file ?)
 ;TODO: from basic kana pair, like ゴロ, generate -> ゴロゴロ, ゴロンゴロン, and ゴロッと, ごろり
 ;TODO: something for single-mora based ones, like sotto, zutto, bou-to
 ;TODO: negative attestations - "this is not a word", or links to evidence that it does kind of exist, like "ginigini"
