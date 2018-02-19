@@ -404,14 +404,28 @@ cardsView words =
 
 layout : String -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
 layout leftOffset left center right =
-    section [ style [ ( "display", "flex" ), ( "width", "120vw" ), ( "transition", ".3s left" ), ( "position", "relative" ), ( "left", leftOffset ) ] ]
+    section
+        [ style
+            [ ( "display", "flex" )
+            , ( "width", "120vw" )
+            , ( "transition", ".3s left" )
+            , ( "position", "relative" )
+            , ( "left", leftOffset )
+            ]
+        , class "layout"
+        ]
         [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
-            left
+            (header [ class "left-header" ] [ text "All" ])
+                :: left
           )
         , section [ style [ ( "width", "60vw" ), ( "display", "inline-block" ) ] ]
-            center
+            ((header [ class "center-header" ] [ text "Selected" ])
+                :: center
+            )
         , section [ style [ ( "width", "20vw" ), ( "display", "inline-block" ) ] ]
-            right
+            ((header [ class "right-header" ] [ text "Words" ])
+                :: right
+            )
         ]
 
 
@@ -428,10 +442,16 @@ pageView model =
                     layout "0" (gojuonView gojuon) [ empty ] [ empty ]
 
                 WithSection selection ->
-                    layout "-20vw" (gojuonView gojuon) [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ] [ empty ]
+                    layout "-20vw"
+                        (gojuonView gojuon)
+                        [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ]
+                        [ empty ]
 
                 WithSectionAndCards selection cards ->
-                    layout "-30vw" (gojuonView gojuon) [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ] [ cardsView cards ]
+                    layout "-30vw"
+                        (gojuonView gojuon)
+                        [ (Maybe.map (activeRowView model.page) (getVowelWiseGrouping gojuon selection)) |> Maybe.withDefault empty ]
+                        [ cardsView cards ]
 
         Nothing ->
             text "waiting for data to load..."

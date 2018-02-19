@@ -24,5 +24,12 @@
                    :width            "100%"
                    :display          "inline-block"}
     [:&.attested-dictionary-word {:background-color blue-sapphire
-                  :color            lumber}]]]
+                                  :color            lumber}]]
+   [:.layout
+    [:header {:margin "5px" :font-size "16px"}]
+    [:.left-header {:text-align "right"}]
+    [:.center-header {:text-align "center"}]
+    [:.right-header {:text-align "center"}]
+    ]
+   ]
   )
