@@ -5,7 +5,6 @@
             [nene.attesting :as attesting]
             [nene.transliterate :as t :refer [transliterate]]))
 
-;TODO: switch attested-in? to load the word's attestation instead of return boolean
 ;TODO: try enums again
 ;TODO: something about whether certain combinations are impossible -- effectively unpronounceable, or not valid combinations in japanese
 ;TODO: from basic kana pair, like ゴロ, generate -> ゴロゴロ, ゴロンゴロン, and ゴロッと, ごろり

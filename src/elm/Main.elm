@@ -9,14 +9,12 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
--- TODO: button panel UI for attestation types
--- TODO: negative attestations, with types (unpronounceable, awkward)
--- TODO: card UI:
 -- TODO: indicate subtype of dictionary word - gitaigo, giseigo
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
+
 
 main =
     Html.program
@@ -140,11 +138,11 @@ replaceCard page word =
             Explorer { pageState | words = (replaceIf (.kana >> ((==) word.kana)) (always word) pageState.words) }
 
 
-attest : Model -> Word -> Model
-attest model word =
+attest : Model -> Word -> Attestation -> Model
+attest model word attestationType =
     let
         newWord =
-            { word | attestation = DictionaryWord }
+            { word | attestation = attestationType }
     in
         case word.location of
             [ g1, d1, g2, d2 ] ->
@@ -216,7 +214,7 @@ update msg model =
         Attesting e ->
             case e of
                 Save word attestationType ->
-                    ( (attest model word)
+                    ( (attest model word attestationType)
                         |> clearNotification
                     , (saveWord word attestationType)
                     )
@@ -246,17 +244,26 @@ withCommand =
     flip (,)
 
 
+indicator : Word -> Attestation -> Html Msg
+indicator word thisAttestation =
+    button
+        [ classList
+            [ ( "hovers", True )
+            , ( (attestationToString thisAttestation), word.attestation == thisAttestation )
+            ]
+        , onClick (Attesting (Save word thisAttestation))
+        ]
+        [ text <| attestationToString thisAttestation ]
+
+
 attestationIndicator : Word -> Html Msg
 attestationIndicator word =
-    case word.attestation of
-        DictionaryWord ->
-            div [] []
-
-        Unattested ->
-            button [ class "hovers", onClick (Attesting (Save word DictionaryWord)) ] [ text "attest" ]
-
-        _ ->
-            empty
+    div
+        [ class "attestation-indicator" ]
+    <|
+        List.map
+            (indicator word)
+            [ DictionaryWord, InternetExamples, Unattested, HardToPronounce, Unlikely, Impossible ]
 
 
 wordView : Word -> Html Msg
@@ -294,13 +301,7 @@ secondLevelConsonantView consonantGroup =
 
 cssClassFromWord : Word -> ( String, Bool )
 cssClassFromWord word =
-    (flip (,)) True <|
-        case word.attestation of
-            DictionaryWord ->
-                "attested-dictionary-word"
-
-            _ ->
-                ""
+    ( attestationToString word.attestation, True )
 
 
 detailedItemView : Page -> Word -> Html Msg
