@@ -14,6 +14,12 @@
 (defn attested-in? [words kana]
   (not (empty? (filter #(= (:kana %) kana) words))))
 
+(defn attestation-for [words kana]
+  (-> (filter #(= (:kana %) kana) words)
+      (first)
+      (get :type)
+      (or "unattested")))
+
 (defn save-word [kana type]
   (if (not (attested-in? (select attestations) kana))
     (insert attestations
@@ -21,4 +27,4 @@
     (update attestations
             (set-fields {:type type})
             (where {:kana kana})))
-    )
+  )
