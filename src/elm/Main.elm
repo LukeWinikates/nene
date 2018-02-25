@@ -9,12 +9,16 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
--- TODO: indicate subtype of dictionary word - gitaigo, giseigo
--- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: refactor out the duplication in the various gojuon subviews
 -- TODO: introduce routing so refreshes work
+-- TODO: the ordering of the unvoiced vs voiced elements feels wrong; ガ行 should be right after か行, not way after
+-- TODO: indicate subtype of dictionary word - gitaigo, giseigo
+-- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
-
+-- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)
+-- TODO: finish refactoring out inline styles
+-- TODO: migration to drop the old words table
+-- TODO: maybe the "Attestation" elm type vs "attestation.type" naming in the sql table can be harmonized
 
 main =
     Html.program
