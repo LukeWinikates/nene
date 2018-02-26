@@ -311,8 +311,8 @@ cssClassFromWord word =
     ( attestationToString word.attestation, True )
 
 
-detailedItemView : Page -> Word -> Html Msg
-detailedItemView currentPage word =
+itemViewWithText : Page -> Word -> Html Msg
+itemViewWithText currentPage word =
     div
         [ classList
             [ ( "word-square", True )
@@ -324,8 +324,8 @@ detailedItemView currentPage word =
         [ text word.kana ]
 
 
-itemView : Word -> Html Msg
-itemView word =
+itemSquareView : Word -> Html Msg
+itemSquareView word =
     div
         [ classList [ ( "word-square", True ), (cssClassFromWord word) ] ]
         []
@@ -344,7 +344,7 @@ secondMoraGroupings consonantGroup =
                         , ( "font-size", "8px" )
                         ]
                     ]
-                    (List.map itemView vg.items)
+                    (List.map itemSquareView vg.items)
             )
             consonantGroup.items
         )
@@ -363,7 +363,7 @@ detailedSecondMoraGroupings page consonantGroup =
                         , ( "font-size", "12px" )
                         ]
                     ]
-                    (List.map (detailedItemView page) vg.items)
+                    (List.map (itemViewWithText page) vg.items)
             )
             consonantGroup.items
         )
@@ -416,7 +416,7 @@ activeRowView page grouping =
         )
 
 
-gojuonView gojuon =
+gojuonThumbnailView gojuon =
     List.map firstLevelConsonantView gojuon
 
 
@@ -487,7 +487,7 @@ pageView model =
                 Explorer pageState ->
                     layout
                         (leftOffsetForPageState pageState)
-                        (gojuonView gojuon)
+                        (gojuonThumbnailView gojuon)
                         [ pageState.selection
                             |> Maybe.andThen (getVowelWiseGrouping gojuon)
                             |> Maybe.map (activeRowView model.page)
