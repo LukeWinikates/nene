@@ -331,42 +331,28 @@ itemSquareView word =
         []
 
 
+innerConsonantGroupingView : String -> (Word -> Html Msg) -> ConsonantWiseGrouping Word -> Html Msg
+innerConsonantGroupingView rowClass wordView consonantGroup =
+    section [] <|
+        List.map
+            (\vg -> div [ class rowClass ] (List.map wordView vg.items))
+            consonantGroup.items
+
+
 secondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
 secondMoraGroupings consonantGroup =
-    section []
-        (List.map
-            (\vg ->
-                div
-                    [ style
-                        [ ( "height", "5px" )
-                        , ( "width", "12%" )
-                        , ( "display", "inline-block" )
-                        , ( "font-size", "8px" )
-                        ]
-                    ]
-                    (List.map itemSquareView vg.items)
-            )
-            consonantGroup.items
-        )
+    innerConsonantGroupingView
+        "gojuon-thumbnail-word-row"
+        itemSquareView
+        consonantGroup
 
 
 detailedSecondMoraGroupings : Page -> ConsonantWiseGrouping Word -> Html Msg
 detailedSecondMoraGroupings page consonantGroup =
-    section [ style [ ( "width", "100%" ) ] ]
-        (List.map
-            (\vg ->
-                div
-                    [ style
-                        [ ( "height", "25px" )
-                        , ( "width", "12%" )
-                        , ( "display", "inline-block" )
-                        , ( "font-size", "12px" )
-                        ]
-                    ]
-                    (List.map (itemViewWithText page) vg.items)
-            )
-            consonantGroup.items
-        )
+    innerConsonantGroupingView
+        "select-grouping-word-row"
+        (itemViewWithText page)
+        consonantGroup
 
 
 firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg

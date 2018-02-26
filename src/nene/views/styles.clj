@@ -36,6 +36,14 @@
                    :width            "100%"
                    :display          "inline-block"}
     ]
+   [:.gojuon-thumbnail-word-row {:height    "5px"
+                                 :width     "12%"
+                                 :display   "inline-block"
+                                 :font-size "8px"}]
+   [:.select-grouping-word-row {:height    "25px"
+                                :width     "12%"
+                                :display   "inline-block"
+                                :font-size "12px"}]
    [:.layout
     {:display    "flex"
      :width      "120vw"
