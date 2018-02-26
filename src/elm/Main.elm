@@ -314,7 +314,11 @@ cssClassFromWord word =
 detailedItemView : Page -> Word -> Html Msg
 detailedItemView currentPage word =
     div
-        [ classList [ ( "word-square", True ), (cssClassFromWord word), ( "hovers", True ) ]
+        [ classList
+            [ ( "word-square", True )
+            , (cssClassFromWord word)
+            , ( "hovers", True )
+            ]
         , onClick (PageChange <| (addCard currentPage word))
         ]
         [ text word.kana ]
@@ -425,25 +429,34 @@ cardsView words =
 layout : String -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
 layout leftOffset left center right =
     section
-        [ style
-            [ ( "display", "flex" )
-            , ( "width", "120vw" )
-            , ( "transition", ".3s left" )
-            , ( "position", "relative" )
-            , ( "left", leftOffset )
-            ]
+        [ style [ ( "left", leftOffset ) ]
         , class "layout"
         ]
-        [ (section [ style [ ( "width", "40vw" ), ( "display", "inline-block" ) ], classList [ ( "portal", True ) ] ] <|
-            (header [ class "left-header hovers", onClick (ChangeViewport Left) ] [ text "All" ])
+        [ (section [ class "layout-element layout-left" ] <|
+            (header
+                [ class "left-header hovers"
+                , onClick (ChangeViewport Left)
+                ]
+                [ text "All" ]
+            )
                 :: left
           )
-        , section [ style [ ( "width", "60vw" ), ( "display", "inline-block" ) ] ]
-            ((header [ class "center-header hovers", onClick (ChangeViewport Middle) ] [ text "Selected" ])
+        , section [ class "layout-element layout-center" ]
+            ((header
+                [ class "center-header hovers"
+                , onClick (ChangeViewport Middle)
+                ]
+                [ text "Selected" ]
+             )
                 :: center
             )
-        , section [ style [ ( "width", "20vw" ), ( "display", "inline-block" ) ] ]
-            ((header [ class "right-header hovers", onClick (ChangeViewport Right) ] [ text "Words" ])
+        , section [ class "layout-element layout-right" ]
+            ((header
+                [ class "right-header hovers"
+                , onClick (ChangeViewport Right)
+                ]
+                [ text "Words" ]
+             )
                 :: right
             )
         ]

@@ -37,6 +37,14 @@
                    :display          "inline-block"}
     ]
    [:.layout
+    {:display    "flex"
+     :width      "120vw"
+     :transition ".3s left"
+     :position   "relative"}
+    [:.layout-element {:display "inline-block"}]
+    [:.layout-left {:width "40vw"}]
+    [:.layout-center {:width "60vw"}]
+    [:.layout-right {:width "20vw"}]
     [:header {:margin "5px" :font-size "16px"}]
     [:.left-header {:text-align "right"}]
     [:.center-header {:text-align "center"}]
