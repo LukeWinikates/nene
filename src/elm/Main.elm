@@ -355,24 +355,30 @@ detailedSecondMoraGroupings page consonantGroup =
         consonantGroup
 
 
-firstLevelConsonantView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-firstLevelConsonantView consonantGroup =
+thumbnailVowelDanColumnView : String -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+thumbnailVowelDanColumnView gyo vg =
+    div
+        [ class "hovers thumbnail-dan-column"
+        , onClick
+            (PageChange <|
+                Explorer
+                    { defaultPageState
+                        | selection = Just { gyo = gyo, dan = vg.dan }
+                        , viewportPosition = Middle
+                    }
+            )
+        ]
+        (text vg.dan :: (List.map secondMoraGroupings vg.items))
+
+
+thumbnailFirstConsonantGyoView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+thumbnailFirstConsonantGyoView consonantGroup =
     section [ class "card" ]
         (div
             []
             [ (text consonantGroup.gyo) ]
             :: (List.map
-                    (\vg ->
-                        div
-                            [ style
-                                [ ( "display", "inline-block" )
-                                , ( "width", "12.5%" )
-                                ]
-                            , class "hovers"
-                            , onClick (PageChange <| Explorer { defaultPageState | selection = Just { gyo = consonantGroup.gyo, dan = vg.dan }, viewportPosition = Middle })
-                            ]
-                            (text vg.dan :: (List.map secondMoraGroupings vg.items))
-                    )
+                    (thumbnailVowelDanColumnView consonantGroup.gyo)
                     consonantGroup.items
                )
         )
@@ -391,19 +397,13 @@ getVowelWiseGrouping gojuon selection =
 
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
-    section
-        [ class "card" ]
-        ((div []
-            [ text
-                grouping.dan
-            ]
-         )
+    section [ class "card" ] <|
+        (div [] [ text grouping.dan ])
             :: (List.map (detailedSecondMoraGroupings page) grouping.items)
-        )
 
 
 gojuonThumbnailView gojuon =
-    List.map firstLevelConsonantView gojuon
+    List.map thumbnailFirstConsonantGyoView gojuon
 
 
 cardsView : List Word -> Html Msg

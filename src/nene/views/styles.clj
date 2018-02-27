@@ -40,6 +40,8 @@
                                  :width     "12%"
                                  :display   "inline-block"
                                  :font-size "8px"}]
+   [:.thumbnail-dan-column {:display "inline-block"
+                            :width   "12.5%"}]
    [:.select-grouping-word-row {:height    "25px"
                                 :width     "12%"
                                 :display   "inline-block"
