@@ -46,6 +46,16 @@
                                 :width     "12%"
                                 :display   "inline-block"
                                 :font-size "12px"}]
+
+   [:.card {:border        "1px solid #555"
+            :border-radius "2px"
+            :padding       "10px"
+            :margin        "5px"}]
+   [:.word-card {:font-size "16px"}]
+   [:.pull-right {:float "right"}]
+   [:.layout-viewport-left {:left "0"}]
+   [:.layout-viewport-center {:left "-20vw"}]
+   [:.layout-viewport-right {:left "-30vw"}]
    [:.layout
     {:display    "flex"
      :width      "120vw"

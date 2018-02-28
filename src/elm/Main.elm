@@ -16,7 +16,6 @@ import Ajax exposing (..)
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)
--- TODO: finish refactoring out inline styles
 -- TODO: migration to drop the old words table
 -- TODO: maybe the "Attestation" elm type vs "attestation.type" naming in the sql table can be harmonized
 -- TODO: since internet examples is really only "ginigini", that's probably not a thing... or it's slightly less than a dictionary word. Maybe just attach markdown to each thing?
@@ -34,7 +33,7 @@ main =
 
 type ViewportPosition
     = Left
-    | Middle
+    | Center
     | Right
 
 
@@ -275,35 +274,12 @@ attestationIndicator word =
 
 wordView : Word -> Html Msg
 wordView word =
-    div [ class "card" ]
-        [ strong [ style [ ( "font-size", "16px" ) ] ] [ text word.kana ]
+    div [ class "card word-card" ]
+        [ strong [] [ text word.kana ]
         , em [] [ text word.romaji ]
-        , button [ onClick (CloseWord word), class "hovers", style [ ( "float", "right" ) ] ] [ text "x" ]
+        , button [ onClick (CloseWord word), class "hovers pull-right" ] [ text "x" ]
         , attestationIndicator word
         ]
-
-
-groupView : Group -> Html Msg
-groupView category =
-    article [ class "card" ]
-        [ section [ class "card-label vertical" ]
-            [ div [] [ text category.jp ]
-            , div [] [ text category.en ]
-            ]
-        , section [ class "card-content pill-container" ]
-            (List.map wordView category.words)
-        ]
-
-
-secondLevelConsonantView : ConsonantWiseGrouping Word -> Html Msg
-secondLevelConsonantView consonantGroup =
-    section [ style [ ( "width", "100%" ) ] ] <|
-        (div [ style [] ] [ (text consonantGroup.gyo) ])
-            :: List.map
-                (\vg ->
-                    div [ style [ ( "height", "20px" ), ( "width", "20px" ) ] ] []
-                )
-                consonantGroup.items
 
 
 cssClassFromWord : Word -> ( String, Bool )
@@ -364,7 +340,7 @@ thumbnailVowelDanColumnView gyo vg =
                 Explorer
                     { defaultPageState
                         | selection = Just { gyo = gyo, dan = vg.dan }
-                        , viewportPosition = Middle
+                        , viewportPosition = Center
                     }
             )
         ]
@@ -412,11 +388,10 @@ cardsView words =
         List.map wordView words
 
 
-layout : String -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
-layout leftOffset left center right =
+layout : PageState -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
+layout pageState left center right =
     section
-        [ style [ ( "left", leftOffset ) ]
-        , class "layout"
+        [ class <| (String.join " ") [ "layout", (leftViewportClassForPageState pageState) ]
         ]
         [ (section [ class "layout-element layout-left" ] <|
             (header
@@ -430,7 +405,7 @@ layout leftOffset left center right =
         , section [ class "layout-element layout-center" ]
             ((header
                 [ class "center-header hovers"
-                , onClick (ChangeViewport Middle)
+                , onClick (ChangeViewport Center)
                 ]
                 [ text "Selected" ]
              )
@@ -452,17 +427,17 @@ empty =
     text ""
 
 
-leftOffsetForPageState : PageState -> String
-leftOffsetForPageState pageState =
+leftViewportClassForPageState : PageState -> String
+leftViewportClassForPageState pageState =
     case pageState.viewportPosition of
         Left ->
-            "0"
+            "layout-viewport-left"
 
-        Middle ->
-            "-20vw"
+        Center ->
+            "layout-viewport-center"
 
         Right ->
-            "-30vw"
+            "layout-viewport-right"
 
 
 pageView : Model -> Html Msg
@@ -472,7 +447,7 @@ pageView model =
             case model.page of
                 Explorer pageState ->
                     layout
-                        (leftOffsetForPageState pageState)
+                        pageState
                         (gojuonThumbnailView gojuon)
                         [ pageState.selection
                             |> Maybe.andThen (getVowelWiseGrouping gojuon)
