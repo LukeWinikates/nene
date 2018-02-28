@@ -18,6 +18,5 @@
          :text-align "center"}]
 
    [:h3 {:margin "5px 0"}]
-   [:.banner-bloc {:display "inline-block"}]
    ]
   )

@@ -24,8 +24,31 @@
    }
   )
 
+(def base-styles
+  [
+   [:body {
+           :color       "#555"
+           :font-family "'Hiragino Kaku Gothic Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+           :font-size   "13px"
+           :margin      "0"
+           }]
+
+   [:* {
+        :box-sizing "border-box"
+        }]
+
+   [:.container {
+                 :max-width "980px"
+                 :margin    "auto"
+                 }
+    ]
+   ]
+  )
+
 (def styles
-  [[:.hovers {:cursor     "pointer"
+  [
+   base-styles
+   [:.hovers {:cursor     "pointer"
               :transition ".3s border-color"
               :border     "1px solid transparent"}
     [:&:hover {:border-color steel-teal}
@@ -62,8 +85,8 @@
      :width      "120vw"
      :transition ".3s left"
      :position   "relative"}
-    [:.layout-element {:display "inline-block"
-                       :height (str "calc( 100vh - " banner/banner-height " )")
+    [:.layout-element {:display    "inline-block"
+                       :height     (str "calc( 100vh - " banner/banner-height " )")
                        :overflow-y "scroll"}]
     [:.layout-left {:width "40vw"}]
     [:.layout-center {:width "60vw"}]
