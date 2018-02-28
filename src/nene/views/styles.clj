@@ -1,5 +1,6 @@
 (ns nene.views.styles
-  (:require [garden.color :as color]))
+  (:require [garden.color :as color]
+            [nene.views.styles.banner :as banner]))
 
 (def gold "#B4833C")
 (def tropical-blue-green "#037064")
@@ -61,7 +62,9 @@
      :width      "120vw"
      :transition ".3s left"
      :position   "relative"}
-    [:.layout-element {:display "inline-block"}]
+    [:.layout-element {:display "inline-block"
+                       :height (str "calc( 100vh - " banner/banner-height " )")
+                       :overflow-y "scroll"}]
     [:.layout-left {:width "40vw"}]
     [:.layout-center {:width "60vw"}]
     [:.layout-right {:width "20vw"}]
@@ -73,5 +76,6 @@
 
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]
+   banner/styles
    ]
   )

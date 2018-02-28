@@ -13,33 +13,3 @@ body {
     max-width: 980px;
     margin: auto;
 }
-
-.banner {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    grid-template-rows: 48px 1fr;
-    line-height: 1.3;
-    margin-bottom: 20px;
-    height: 110px;
-}
-
-.banner h1.jp {
-    font-size: 48px;
-}
-
-.banner h1.en {
-    font-size: 30px;
-}
-
-.banner h1 {
-    margin: 0;
-    text-align: center;
-}
-
-.banner h3 {
-    margin: 5px 0;
-}
-
-.banner-block {
-    display: inline-block;
-}
