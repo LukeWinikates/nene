@@ -8,11 +8,10 @@ import Dict
 import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
-
--- TODO: refactor out the duplication in the various gojuon subviews
+-- TODO: indicate subtype of dictionary word - gitaigo, giseigo, non-gitago doubling words. can be multiple types at once.
+-- TODO: start to classify associations between phonemes and types of sounds/feelings
 -- TODO: introduce routing so refreshes work
 -- TODO: the ordering of the unvoiced vs voiced elements feels wrong; ガ行 should be right after か行, not way after
--- TODO: indicate subtype of dictionary word - gitaigo, giseigo
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)
