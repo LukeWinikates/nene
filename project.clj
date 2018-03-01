@@ -14,8 +14,8 @@
                  [garden "1.3.3"]
                  ]
   :plugins [[lein-ring "0.8.12"]]
-  :aliases {"migrate"  ["run" "-m" "nene.migrate/migrate"]
-            "rollback" ["run" "-m" "nene.migrate/rollback"]}
+  :aliases {"migrate"  ["run" "-m" "nene.lein.migrate/migrate"]
+            "rollback" ["run" "-m" "nene.lein.migrate/rollback"]}
   :ring {:handler nene.handler/app
          :init nene.handler/init
          :destroy nene.handler/destroy}

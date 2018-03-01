@@ -1,4 +1,4 @@
-(ns nene.repl
+(ns nene.lein.repl
   (:use nene.handler
         ring.server.standalone
         [ring.middleware file-info file]))

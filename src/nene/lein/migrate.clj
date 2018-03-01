@@ -1,4 +1,4 @@
-(ns nene.migrate
+(ns nene.lein.migrate
   (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]))
 
