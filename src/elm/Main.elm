@@ -8,6 +8,10 @@ import Dict
 import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
+-- TODO: get setup to run on heroku, write a lein task that pushes attestations from the local DB to the cloud instance
+-- TODO: make the app only allow me to edit things when it's on heroku.
+-- TODO: groupings by other relationships, alternative ways of visualizing the sounds spaces
+-- TODO: think about how to deal with non-doubling ones, like "しゃんと", for example
 -- TODO: indicate subtype of dictionary word - gitaigo, giseigo, non-gitago doubling words. can be multiple types at once.
 -- TODO: add a search box
 -- TODO: start to classify associations between phonemes and types of sounds/feelings
