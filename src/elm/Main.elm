@@ -9,6 +9,7 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 -- TODO: indicate subtype of dictionary word - gitaigo, giseigo, non-gitago doubling words. can be multiple types at once.
+-- TODO: add a search box
 -- TODO: start to classify associations between phonemes and types of sounds/feelings
 -- TODO: introduce routing so refreshes work
 -- TODO: the ordering of the unvoiced vs voiced elements feels wrong; ガ行 should be right after か行, not way after
