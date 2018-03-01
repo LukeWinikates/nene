@@ -16,7 +16,6 @@ import Ajax exposing (..)
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)
--- TODO: migration to drop the old words table
 -- TODO: maybe the "Attestation" elm type vs "attestation.type" naming in the sql table can be harmonized
 -- TODO: since internet examples is really only "ginigini", that's probably not a thing... or it's slightly less than a dictionary word. Maybe just attach markdown to each thing?
 -- TODO: is there a markdown renderer for elm?
