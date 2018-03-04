@@ -8,6 +8,7 @@ import Dict
 import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
+
 -- TODO: get setup to run on heroku, write a lein task that pushes attestations from the local DB to the cloud instance
 -- TODO: make the app only allow me to edit things when it's on heroku.
 -- TODO: groupings by other relationships, alternative ways of visualizing the sounds spaces
@@ -334,6 +335,11 @@ detailedSecondMoraGroupings page consonantGroup =
         consonantGroup
 
 
+listWithTitle : String -> (a -> Html Msg) -> List a -> List (Html Msg)
+listWithTitle title itemView items =
+    div [] [(text title)] :: (List.map itemView items)
+
+
 thumbnailVowelDanColumnView : String -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 thumbnailVowelDanColumnView gyo vg =
     div
@@ -347,20 +353,17 @@ thumbnailVowelDanColumnView gyo vg =
                     }
             )
         ]
-        (text vg.dan :: (List.map secondMoraGroupings vg.items))
+    <|
+        listWithTitle vg.dan secondMoraGroupings vg.items
 
 
 thumbnailFirstConsonantGyoView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 thumbnailFirstConsonantGyoView consonantGroup =
-    section [ class "card" ]
-        (div
-            []
-            [ (text consonantGroup.gyo) ]
-            :: (List.map
-                    (thumbnailVowelDanColumnView consonantGroup.gyo)
-                    consonantGroup.items
-               )
-        )
+    section [ class "card" ] <|
+        listWithTitle
+            consonantGroup.gyo
+            (thumbnailVowelDanColumnView consonantGroup.gyo)
+            consonantGroup.items
 
 
 getVowelWiseGrouping : GitaigoByGojuonOrder -> Selection -> Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word))
@@ -377,8 +380,7 @@ getVowelWiseGrouping gojuon selection =
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
     section [ class "card" ] <|
-        (div [] [ text grouping.dan ])
-            :: (List.map (detailedSecondMoraGroupings page) grouping.items)
+        listWithTitle grouping.dan (detailedSecondMoraGroupings page) grouping.items
 
 
 gojuonThumbnailView gojuon =
