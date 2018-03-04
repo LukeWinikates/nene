@@ -64,26 +64,48 @@
 (def gyo-except-last
   (reverse (drop 1 (reverse all-gyo))))
 
+(def all-dan
+  (let [simple-strategy (fn [c d] (t/get-kana c (:vowel d)))
+        yoon-strategy (fn [c d] (str (t/get-kana c "i") (:dan d)))]
+    [
+     {:vowel "a" :dan "ア段" :strategy simple-strategy}
+     {:vowel "i" :dan "イ段" :strategy simple-strategy}
+     {:vowel "u" :dan "ウ段" :strategy simple-strategy}
+     {:vowel "e" :dan "エ段" :strategy simple-strategy}
+     {:vowel "o" :dan "オ段" :strategy simple-strategy}
+     {:vowel "ya" :dan "ゃ" :strategy yoon-strategy}
+     {:vowel "yu" :dan "ゅ" :strategy yoon-strategy}
+     {:vowel "yo" :dan "ょ" :strategy yoon-strategy}
+     ]
+    )
+  )
+
+(defn map-vowel [consonant f]
+  (->>
+    all-dan
+    (take (if (#{"" "w" "y" "nn"} consonant) 5 8))
+    (map
+      (fn [dan] (f dan ((get dan :strategy) consonant dan))))
+    )
+  )
+
+
 (defn with-k1 [attested-words k1 g1 d1]
   (map
     (fn [{c2 :consonant g2 :gyo}]
       {:consonant c2
        :gyo       g2
-       :items     (vec (concat (map
-                                 (fn [v2 d2]
-                                   {:vowel v2
-                                    :dan   d2
-                                    :items (k1k2->items attested-words k1 (t/get-kana c2 v2) g1 d1 g2 d2)
-                                    })
-                                 ["a" "i" "u" "e" "o"]
-                                 ["ア段" "イ段" "ウ段" "エ段" "オ段"]
-                                 )
-                               (if-not (#{"" "w" "y" "nn"} c2) (yoon-map (fn [y] {
-                                                                                  :vowel y
-                                                                                  :dan   y
-                                                                                  :items (k1k2->items attested-words k1 (str (t/get-kana c2 "i") y) g1 d1 g2 y)
-                                                                                  })
-                                                                         ) [])))
+       :items     (vec
+                    (map-vowel
+                      c2
+                      (fn [{v2 :vowel d2 :dan} k2]
+                        {:vowel v2
+                         :dan   d2
+                         :items (k1k2->items attested-words k1 k2 g1 d1 g2 d2)
+                         }
+                        )
+                      )
+                    )
        }
       )
     all-gyo
