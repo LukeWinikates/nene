@@ -398,38 +398,43 @@ classes =
     (String.join " ") >> class
 
 
+viewportPositionToString : ViewportPosition -> String
+viewportPositionToString vp =
+    case vp of
+        Left ->
+            "left"
+
+        Center ->
+            "center"
+
+        Right ->
+            "right"
+
+
+layoutElement : ViewportPosition -> String -> List (Html Msg) -> Html Msg
+layoutElement viewportPosition title elements =
+    let
+        viewportString =
+            (viewportPositionToString viewportPosition)
+    in
+        (section [ classes [ "layout-element", "layout-" ++ viewportString ] ] <|
+            (header
+                [ classes [ viewportString ++ "-header", "hovers" ]
+                , onClick (ChangeViewport viewportPosition)
+                ]
+                [ text title ]
+            )
+                :: elements
+        )
+
+
 layout : PageState -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
 layout pageState left center right =
     section
-        [ classes [ "layout", (leftViewportClassForPageState pageState) ]
-        ]
-        [ (section [ classes [ "layout-element", "layout-left" ] ] <|
-            (header
-                [ classes [ "left-header", "hovers" ]
-                , onClick (ChangeViewport Left)
-                ]
-                [ text "All" ]
-            )
-                :: left
-          )
-        , section [ classes [ "layout-element", "layout-center" ] ]
-            ((header
-                [ classes [ "center-header", "hovers" ]
-                , onClick (ChangeViewport Center)
-                ]
-                [ text "Selected" ]
-             )
-                :: center
-            )
-        , section [ classes [ "layout-element", "layout-right" ] ]
-            ((header
-                [ classes [ "right-header", "hovers" ]
-                , onClick (ChangeViewport Right)
-                ]
-                [ text "Words" ]
-             )
-                :: right
-            )
+        [ classes [ "layout", (leftViewportClassForPageState pageState) ] ]
+        [ layoutElement Left "All" left
+        , layoutElement Center "Selected" center
+        , layoutElement Right "Words" right
         ]
 
 
