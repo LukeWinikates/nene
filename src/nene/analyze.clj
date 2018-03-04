@@ -1,8 +1,5 @@
 (ns nene.analyze
-  (:require [clojure.string :as string]
-            [clojure.data.csv :as csv]
-            [clojure.java.io :as io]
-            [nene.attesting :as attesting]
+  (:require [nene.attesting :as attesting]
             [nene.transliterate :as t :refer [transliterate]]))
 
 ;TODO: try enums again
