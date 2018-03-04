@@ -393,32 +393,37 @@ cardsView words =
         List.map wordView words
 
 
+classes : List String -> Html.Attribute msg
+classes =
+    (String.join " ") >> class
+
+
 layout : PageState -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
 layout pageState left center right =
     section
-        [ class <| (String.join " ") [ "layout", (leftViewportClassForPageState pageState) ]
+        [ classes [ "layout", (leftViewportClassForPageState pageState) ]
         ]
-        [ (section [ class "layout-element layout-left" ] <|
+        [ (section [ classes [ "layout-element", "layout-left" ] ] <|
             (header
-                [ class "left-header hovers"
+                [ classes [ "left-header", "hovers" ]
                 , onClick (ChangeViewport Left)
                 ]
                 [ text "All" ]
             )
                 :: left
           )
-        , section [ class "layout-element layout-center" ]
+        , section [ classes [ "layout-element", "layout-center" ] ]
             ((header
-                [ class "center-header hovers"
+                [ classes [ "center-header", "hovers" ]
                 , onClick (ChangeViewport Center)
                 ]
                 [ text "Selected" ]
              )
                 :: center
             )
-        , section [ class "layout-element layout-right" ]
+        , section [ classes [ "layout-element", "layout-right" ] ]
             ((header
-                [ class "right-header hovers"
+                [ classes [ "right-header", "hovers" ]
                 , onClick (ChangeViewport Right)
                 ]
                 [ text "Words" ]
