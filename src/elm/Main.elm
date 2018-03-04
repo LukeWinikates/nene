@@ -17,7 +17,6 @@ import Ajax exposing (..)
 -- TODO: add a search box
 -- TODO: start to classify associations between phonemes and types of sounds/feelings
 -- TODO: introduce routing so refreshes work
--- TODO: the ordering of the unvoiced vs voiced elements feels wrong; ガ行 should be right after か行, not way after
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)

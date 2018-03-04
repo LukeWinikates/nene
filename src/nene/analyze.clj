@@ -44,19 +44,19 @@
   [
    {:consonant "" :gyo "ア行"}
    {:consonant "k" :gyo "カ行"}
+   {:consonant "g" :gyo "ガ行"}
    {:consonant "s" :gyo "サ行"}
+   {:consonant "z" :gyo "ザ行"}
    {:consonant "t" :gyo "タ行"}
+   {:consonant "d" :gyo "ダ行"}
    {:consonant "n" :gyo "ナ行"}
    {:consonant "h" :gyo "ハ行"}
+   {:consonant "b" :gyo "バ行"}
+   {:consonant "p" :gyo "パ行"}
    {:consonant "m" :gyo "マ行"}
    {:consonant "y" :gyo "ヤ行"}
    {:consonant "r" :gyo "ラ行"}
    {:consonant "w" :gyo "ワ行"}
-   {:consonant "g" :gyo "ガ行"}
-   {:consonant "z" :gyo "ザ行"}
-   {:consonant "d" :gyo "ダ行"}
-   {:consonant "b" :gyo "バ行"}
-   {:consonant "p" :gyo "パ行"}
    {:consonant "nn" :gyo "ン行"}
    ]
   )
