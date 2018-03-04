@@ -25,14 +25,6 @@
     )
   )
 
-(defn yoon-map [f]
-  (map
-    f
-    ["ゃ" "ゅ" "ょ"]
-    )
-  )
-
-
 (defn k1k2->items [attested-words k1 k2 g1 d1 g2 d2]
   (if (every? some? [k1 k2])
     [(kana->word attested-words (str k1 k2) g1 d1 g2 d2)]
@@ -121,23 +113,17 @@
           {
            :consonant c
            :gyo       g
-           :items     (vec (concat (map
-                                     (fn [v d] {
-                                                :vowel v
-                                                :dan   d
-                                                :items (vec (with-k1 attested-words (t/get-kana c v) g d))
-                                                })
-                                     ["a" "i" "u" "e" "o"]
-                                     ["ア段" "イ段" "ウ段" "エ段" "オ段"]
-                                     )
-                                   (if-not (#{"" "w" "y" "nn"} c) (yoon-map
-
-                                                                    (fn [y] {
-                                                                             :vowel y
-                                                                             :dan   y
-                                                                             :items (vec (with-k1 attested-words (str (t/get-kana c "i") y) g y))
-                                                                             })
-                                                                    ) [])))
+           :items     (vec
+                        (map-vowel
+                          c
+                          (fn [{v :vowel d :dan} k1]
+                            {
+                             :vowel v
+                             :dan   d
+                             :items (vec (with-k1 attested-words k1 g d))
+                             }
+                            )
+                          ))
            }
           )
         gyo-except-last
