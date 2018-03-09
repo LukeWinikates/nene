@@ -12,27 +12,22 @@ import Ajax exposing (..)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: refactor the clojure code for combining consonants with vowels
-
 -- TODO: theme: make public
 -- TODO: get setup to run on heroku, write a lein task that pushes attestations from the local DB to the cloud instance
 -- TODO: make the app only allow me to edit things when it's on heroku.
-
 -- TODO: theme: associations
 -- TODO: groupings by other relationships, alternative ways of visualizing the sounds spaces
 -- TODO: start to classify associations between phonemes and types of sounds/feelings
 -- TODO: tags/feelings (freeform words? allow for hashtags?)
-
 -- TODO: theme: non-doubling
 -- TODO: think about how to deal with non-doubling ones, like "しゃんと", for example
 -- TODO: just show one indicator for the lone mora, ahead of the lists of combined ones
 -- TODO: why are some doubling-words used with と and some not?
-
 -- TODO: theme: usability/features
 -- TODO: indicate subtype of dictionary word - gitaigo, giseigo, non-gitago doubling words. can be multiple types at once.
 -- TODO: add a search box
 -- TODO: introduce routing so refreshes work
 -- TODO: think about switching everything to katakana (or knowing which one is right for the thing in question...)
-
 -- TODO: distinctions between different kinds of words (gitaigo, giseigo, giongo, gijougo)
 -- TODO: maybe the "Attestation" elm type vs "attestation.type" naming in the sql table can be harmonized
 -- TODO: since internet examples is really only "ginigini", that's probably not a thing... or it's slightly less than a dictionary word. Maybe just attach markdown to each thing?
@@ -350,7 +345,7 @@ detailedSecondMoraGroupings page consonantGroup =
 
 listWithTitle : String -> (a -> Html Msg) -> List a -> List (Html Msg)
 listWithTitle title itemView items =
-    div [] [(text title)] :: (List.map itemView items)
+    div [] [ (text title) ] :: (List.map itemView items)
 
 
 thumbnailVowelDanColumnView : String -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
@@ -370,9 +365,9 @@ thumbnailVowelDanColumnView gyo vg =
         listWithTitle vg.dan secondMoraGroupings vg.items
 
 
-thumbnailFirstConsonantGyoView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-thumbnailFirstConsonantGyoView consonantGroup =
-    section [ class "card" ] <|
+thumbnailFirstConsonantGyoView : Maybe Selection -> ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+thumbnailFirstConsonantGyoView selection consonantGroup =
+    section [ classList [ ( "card", True ), ( "selected", Maybe.map (\s -> s.gyo == consonantGroup.gyo) selection |> withDefault False ) ] ] <|
         listWithTitle
             consonantGroup.gyo
             (thumbnailVowelDanColumnView consonantGroup.gyo)
@@ -396,8 +391,8 @@ activeRowView page grouping =
         listWithTitle grouping.dan (detailedSecondMoraGroupings page) grouping.items
 
 
-gojuonThumbnailView gojuon =
-    List.map thumbnailFirstConsonantGyoView gojuon
+gojuonThumbnailView gojuon selection =
+    List.map (thumbnailFirstConsonantGyoView selection) gojuon
 
 
 cardsView : List Word -> Html Msg
@@ -474,15 +469,7 @@ pageView model =
         Just gojuon ->
             case model.page of
                 Explorer pageState ->
-                    layout
-                        pageState
-                        (gojuonThumbnailView gojuon)
-                        [ pageState.selection
-                            |> Maybe.andThen (getVowelWiseGrouping gojuon)
-                            |> Maybe.map (activeRowView model.page)
-                            |> Maybe.withDefault empty
-                        ]
-                        [ cardsView pageState.words ]
+                    div [] (gojuonThumbnailView gojuon pageState.selection)
 
         Nothing ->
             text "waiting for data to load..."

@@ -100,5 +100,6 @@
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]
    banner/styles
+   [:.selected {:background-color "gold"}]
    ]
   )
