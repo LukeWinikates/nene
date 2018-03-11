@@ -1,6 +1,5 @@
 (ns nene.views.styles
-  (:require [garden.color :as color]
-            [nene.views.styles.banner :as banner]))
+  (:require [nene.views.styles.banner :as banner]))
 
 (def gold "#B4833C")
 (def tropical-blue-green "#037064")
@@ -77,25 +76,6 @@
             :margin        "5px"}]
    [:.word-card {:font-size "16px"}]
    [:.pull-right {:float "right"}]
-   [:.layout-viewport-left {:left "0"}]
-   [:.layout-viewport-center {:left "-20vw"}]
-   [:.layout-viewport-right {:left "-30vw"}]
-   [:.layout
-    {:display    "flex"
-     :width      "120vw"
-     :transition ".3s left"
-     :position   "relative"}
-    [:.layout-element {:display    "inline-block"
-                       :height     (str "calc( 100vh - " banner/banner-height " )")
-                       :overflow-y "scroll"}]
-    [:.layout-left {:width "40vw"}]
-    [:.layout-center {:width "60vw"}]
-    [:.layout-right {:width "20vw"}]
-    [:header {:margin "5px" :font-size "16px"}]
-    [:.left-header {:text-align "right"}]
-    [:.center-header {:text-align "center"}]
-    [:.right-header {:text-align "center"}]
-    ]
 
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]

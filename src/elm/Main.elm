@@ -49,22 +49,14 @@ main =
         }
 
 
-type ViewportPosition
-    = Left
-    | Center
-    | Right
-
-
 type alias PageState =
-    { viewportPosition : ViewportPosition
-    , selection : Maybe Selection
+    { selection : Maybe Selection
     , words : List Word
     }
 
 
 defaultPageState =
-    { viewportPosition = Left
-    , selection = Nothing
+    { selection = Nothing
     , words = []
     }
 
@@ -87,7 +79,7 @@ addCard : Page -> Word -> Page
 addCard page word =
     case page of
         Explorer pageState ->
-            Explorer { pageState | words = pageState.words ++ [ word ], viewportPosition = Right }
+            Explorer { pageState | words = pageState.words ++ [ word ] }
 
 
 type alias Selection =
@@ -121,7 +113,6 @@ type Msg
     | PageChange Page
     | Attesting AttestingEvent
     | CloseWord Word
-    | ChangeViewport ViewportPosition
 
 
 closeWord : Word -> Page -> Page
@@ -224,15 +215,6 @@ update msg model =
 
         CloseWord word ->
             { model | page = closeWord word model.page }
-                |> noCommand
-
-        ChangeViewport position ->
-            { model
-                | page =
-                    case model.page of
-                        Explorer pageState ->
-                            Explorer { pageState | viewportPosition = position }
-            }
                 |> noCommand
 
         Attesting e ->
@@ -363,7 +345,6 @@ thumbnailVowelDanColumnView gyo vg =
                 Explorer
                     { defaultPageState
                         | selection = Just { gyo = gyo, dan = vg.dan }
-                        , viewportPosition = Center
                     }
             )
         ]
@@ -393,7 +374,7 @@ getVowelWiseGrouping gojuon selection =
 
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
-    section [ class "card" ] <|
+    section [] <|
         listWithTitle grouping.dan (detailedSecondMoraGroupings page) grouping.items
 
 
@@ -412,63 +393,8 @@ classes =
     (String.join " ") >> class
 
 
-
--- TODO: delete these along with CSS classes
-
-
-viewportPositionToString : ViewportPosition -> String
-viewportPositionToString vp =
-    case vp of
-        Left ->
-            "left"
-
-        Center ->
-            "center"
-
-        Right ->
-            "right"
-
-
-
--- TODO: delete these along with CSS classes
-
-
-layoutElement : ViewportPosition -> String -> List (Html Msg) -> Html Msg
-layoutElement viewportPosition title elements =
-    let
-        viewportString =
-            (viewportPositionToString viewportPosition)
-    in
-        (section [ classes [ "layout-element", "layout-" ++ viewportString ] ] <|
-            (header
-                [ classes [ viewportString ++ "-header", "hovers" ]
-                , onClick (ChangeViewport viewportPosition)
-                ]
-                [ text title ]
-            )
-                :: elements
-        )
-
-
 empty =
     text ""
-
-
-
--- TODO: delete these along with CSS classes
-
-
-leftViewportClassForPageState : PageState -> String
-leftViewportClassForPageState pageState =
-    case pageState.viewportPosition of
-        Left ->
-            "layout-viewport-left"
-
-        Center ->
-            "layout-viewport-center"
-
-        Right ->
-            "layout-viewport-right"
 
 
 modalBackground : Html Msg
