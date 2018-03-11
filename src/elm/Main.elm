@@ -11,8 +11,6 @@ import Ajax exposing (..)
 
 -- TODO: instead of the animated fullscreen treatment, do a slide-up card version?
 -- TODO: slide-up animation
--- TODO: close button
--- TODO: finish modal styling
 -- TODO: don't allow background to scroll when modal open
 -- TODO: change view to show more detailed word cards (instead of just the kana)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
@@ -113,6 +111,7 @@ type Msg
     | PageChange Page
     | Attesting AttestingEvent
     | CloseWord Word
+    | CloseModal
 
 
 closeWord : Word -> Page -> Page
@@ -215,6 +214,10 @@ update msg model =
 
         CloseWord word ->
             { model | page = closeWord word model.page }
+                |> noCommand
+
+        CloseModal ->
+            { model | page = Explorer defaultPageState }
                 |> noCommand
 
         Attesting e ->
@@ -375,7 +378,7 @@ getVowelWiseGrouping gojuon selection =
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
     article []
-        [ header [] [ text grouping.dan ]
+        [ header [] [ text grouping.dan, (button [ onClick CloseModal, class "pull-right icon-button" ]) [ text "x" ] ]
         , section [] <| List.map (detailedSecondMoraGroupings page) grouping.items
         ]
 
@@ -403,7 +406,7 @@ modalView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 modalView selection =
     div
         [ class "modal-container" ]
-        [ div [ class "modal-background" ] []
+        [ div [ class "modal-background", onClick CloseModal ] []
         , div
             [ class "modal" ]
             [ activeRowView emptyModel.page selection ]

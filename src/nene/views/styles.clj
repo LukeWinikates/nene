@@ -103,6 +103,9 @@
              }
     [:header {:font-weight "bold" :font-size "14px"}]
     ]
+   [:.icon-button { :cursor "pointer" :border "none" }
+    [:&:focus { :outline "none"}]
+    [:&:hover { :text-decoration "underline" }]]
 
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]
