@@ -374,8 +374,10 @@ getVowelWiseGrouping gojuon selection =
 
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
-    section [] <|
-        listWithTitle grouping.dan (detailedSecondMoraGroupings page) grouping.items
+    article []
+        [ header [] [ text grouping.dan ]
+        , section [] <| List.map (detailedSecondMoraGroupings page) grouping.items
+        ]
 
 
 gojuonThumbnailView gojuon =
@@ -397,33 +399,13 @@ empty =
     text ""
 
 
-modalBackground : Html Msg
-modalBackground =
-    div [ style [ ( "height", "100%" ), ( "width", "100%" ), ( "background-color", "black" ), ( "opacity", "0.4" ), ( "position", "absolute" ) ] ] []
-
-
 modalView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 modalView selection =
     div
-        [ style
-            [ ( "position", "fixed" )
-            , ( "top", "0" )
-            , ( "left", "0" )
-            , ( "height", "100vh" )
-            , ( "width", "100vw" )
-            ]
-        ]
-        [ modalBackground
+        [ class "modal-container" ]
+        [ div [ class "modal-background" ] []
         , div
-            [ style
-                [ ( "position", "relative" )
-                , ( "top", "40px" )
-                , ( "margin", "auto" )
-                , ( "background-color", "white" )
-                , ( "width", "800px" )
-                , ( "max-width", "80%" )
-                ]
-            ]
+            [ class "modal" ]
             [ activeRowView emptyModel.page selection ]
         ]
 

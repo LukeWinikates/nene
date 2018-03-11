@@ -66,7 +66,7 @@
    [:.thumbnail-dan-column {:display "inline-block"
                             :width   "12.5%"}]
    [:.select-grouping-word-row {:height    "25px"
-                                :width     "12%"
+                                :width     "12.5%"
                                 :display   "inline-block"
                                 :font-size "12px"}]
 
@@ -76,6 +76,33 @@
             :margin        "5px"}]
    [:.word-card {:font-size "16px"}]
    [:.pull-right {:float "right"}]
+   [:.modal-container {
+                       :position "fixed"
+                       :top      "0"
+                       :left     "0"
+                       :height   "100vh"
+                       :width    "100vw"
+                       }]
+   [:.modal-background {
+                        :height           "100%"
+                        :width            "100%"
+                        :background-color "black"
+                        :opacity          "0.4"
+                        :position         "absolute"
+                        }]
+   [:.modal {
+             :position         "relative"
+             :top              "80px"
+             :margin           "auto"
+             :background-color "white"
+             :width            "800px"
+             :max-width        "80%"
+             :border-radius    "5px"
+             :box-shadow       "5px 5px 15px -1px #424242;"
+             :padding          "15px"
+             }
+    [:header {:font-weight "bold" :font-size "14px"}]
+    ]
 
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]
