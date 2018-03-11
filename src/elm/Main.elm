@@ -9,6 +9,12 @@ import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
 
+-- TODO: instead of the animated fullscreen treatment, do a slide-up card version?
+-- TODO: slide-up animation
+-- TODO: close button
+-- TODO: finish modal styling
+-- TODO: don't allow background to scroll when modal open
+-- TODO: change view to show more detailed word cards (instead of just the kana)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
 -- TODO: refactor the clojure code for combining consonants with vowels
@@ -365,9 +371,9 @@ thumbnailVowelDanColumnView gyo vg =
         listWithTitle vg.dan secondMoraGroupings vg.items
 
 
-thumbnailFirstConsonantGyoView : Maybe Selection -> ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-thumbnailFirstConsonantGyoView selection consonantGroup =
-    section [ classList [ ( "card", True ), ( "selected", Maybe.map (\s -> s.gyo == consonantGroup.gyo) selection |> withDefault False ) ] ] <|
+thumbnailFirstConsonantGyoView : ConsonantWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+thumbnailFirstConsonantGyoView consonantGroup =
+    section [ classList [ ( "card", True ) ] ] <|
         listWithTitle
             consonantGroup.gyo
             (thumbnailVowelDanColumnView consonantGroup.gyo)
@@ -391,8 +397,8 @@ activeRowView page grouping =
         listWithTitle grouping.dan (detailedSecondMoraGroupings page) grouping.items
 
 
-gojuonThumbnailView gojuon selection =
-    List.map (thumbnailFirstConsonantGyoView selection) gojuon
+gojuonThumbnailView gojuon =
+    List.map (thumbnailFirstConsonantGyoView) gojuon
 
 
 cardsView : List Word -> Html Msg
@@ -406,6 +412,10 @@ classes =
     (String.join " ") >> class
 
 
+
+-- TODO: delete these along with CSS classes
+
+
 viewportPositionToString : ViewportPosition -> String
 viewportPositionToString vp =
     case vp of
@@ -417,6 +427,10 @@ viewportPositionToString vp =
 
         Right ->
             "right"
+
+
+
+-- TODO: delete these along with CSS classes
 
 
 layoutElement : ViewportPosition -> String -> List (Html Msg) -> Html Msg
@@ -436,18 +450,12 @@ layoutElement viewportPosition title elements =
         )
 
 
-layout : PageState -> List (Html Msg) -> List (Html Msg) -> List (Html Msg) -> Html Msg
-layout pageState left center right =
-    section
-        [ classes [ "layout", (leftViewportClassForPageState pageState) ] ]
-        [ layoutElement Left "All" left
-        , layoutElement Center "Selected" center
-        , layoutElement Right "Words" right
-        ]
-
-
 empty =
     text ""
+
+
+
+-- TODO: delete these along with CSS classes
 
 
 leftViewportClassForPageState : PageState -> String
@@ -463,13 +471,50 @@ leftViewportClassForPageState pageState =
             "layout-viewport-right"
 
 
+modalBackground : Html Msg
+modalBackground =
+    div [ style [ ( "height", "100%" ), ( "width", "100%" ), ( "background-color", "black" ), ( "opacity", "0.4" ), ( "position", "absolute" ) ] ] []
+
+
+modalView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+modalView selection =
+    div
+        [ style
+            [ ( "position", "fixed" )
+            , ( "top", "0" )
+            , ( "left", "0" )
+            , ( "height", "100vh" )
+            , ( "width", "100vw" )
+            ]
+        ]
+        [ modalBackground
+        , div
+            [ style
+                [ ( "position", "relative" )
+                , ( "top", "40px" )
+                , ( "margin", "auto" )
+                , ( "background-color", "white" )
+                , ( "width", "800px" )
+                , ( "max-width", "80%" )
+                ]
+            ]
+            [ activeRowView emptyModel.page selection ]
+        ]
+
+
 pageView : Model -> Html Msg
 pageView model =
     case model.gojuon of
         Just gojuon ->
             case model.page of
                 Explorer pageState ->
-                    div [] (gojuonThumbnailView gojuon pageState.selection)
+                    div [] <|
+                        ((gojuonThumbnailView gojuon)
+                            ++ [ (Maybe.andThen (getVowelWiseGrouping gojuon) pageState.selection)
+                                    |> Maybe.map modalView
+                                    |> withDefault empty
+                               ]
+                        )
 
         Nothing ->
             text "waiting for data to load..."
