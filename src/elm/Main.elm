@@ -49,13 +49,13 @@ main =
 
 type alias PageState =
     { selection : Maybe Selection
-    , words : List Word
+    , word : Maybe Word
     }
 
 
 defaultPageState =
     { selection = Nothing
-    , words = []
+    , word = Nothing
     }
 
 
@@ -71,13 +71,6 @@ saveWord word attestationType =
 
 type Page
     = Explorer PageState
-
-
-addCard : Page -> Word -> Page
-addCard page word =
-    case page of
-        Explorer pageState ->
-            Explorer { pageState | words = pageState.words ++ [ word ] }
 
 
 type alias Selection =
@@ -111,14 +104,15 @@ type Msg
     | PageChange Page
     | Attesting AttestingEvent
     | CloseWord Word
+    | OpenWord Word
     | CloseModal
 
 
-closeWord : Word -> Page -> Page
-closeWord word page =
+closeWord : Page -> Page
+closeWord page =
     case page of
         Explorer pageState ->
-            Explorer { pageState | words = (List.filter ((/=) word) pageState.words) }
+            Explorer { pageState | word = Nothing }
 
 
 danEq x =
@@ -145,13 +139,6 @@ replaceIf pred f list =
         list
 
 
-replaceCard : Page -> Word -> Page
-replaceCard page word =
-    case page of
-        Explorer pageState ->
-            Explorer { pageState | words = (replaceIf (.kana >> ((==) word.kana)) (always word) pageState.words) }
-
-
 attest : Model -> Word -> Attestation -> Model
 attest model word attestationType =
     let
@@ -163,8 +150,7 @@ attest model word attestationType =
                 case model.gojuon of
                     Just gojuon ->
                         { model
-                            | page = replaceCard model.page newWord
-                            , gojuon =
+                            | gojuon =
                                 Just
                                     (replaceIf
                                         (gyoEq g1)
@@ -212,8 +198,13 @@ update msg model =
                 |> clearNotification
                 |> noCommand
 
+        OpenWord word ->
+            { model | page = setWord word model.page }
+                |> clearNotification
+                |> noCommand
+
         CloseWord word ->
-            { model | page = closeWord word model.page }
+            { model | page = closeWord model.page }
                 |> noCommand
 
         CloseModal ->
@@ -290,6 +281,13 @@ cssClassFromWord word =
     ( attestationToString word.attestation, True )
 
 
+setWord : Word -> Page -> Page
+setWord word page =
+    case page of
+        Explorer pageState ->
+            Explorer { pageState | word = Just word }
+
+
 itemViewWithText : Page -> Word -> Html Msg
 itemViewWithText currentPage word =
     div
@@ -297,8 +295,13 @@ itemViewWithText currentPage word =
             [ ( "word-square", True )
             , (cssClassFromWord word)
             , ( "hovers", True )
+            , ( "active"
+              , case currentPage of
+                    Explorer pageState ->
+                        pageState.word == Just word
+              )
             ]
-        , onClick (PageChange <| (addCard currentPage word))
+        , onClick (OpenWord word)
         ]
         [ text word.kana ]
 
@@ -378,7 +381,10 @@ getVowelWiseGrouping gojuon selection =
 activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
 activeRowView page grouping =
     article []
-        [ header [] [ text grouping.dan, (button [ onClick CloseModal, class "pull-right icon-button" ]) [ text "x" ] ]
+        [ header []
+            [ text grouping.dan
+            , (button [ onClick CloseModal, class "pull-right icon-button" ]) [ text "x" ]
+            ]
         , section [] <| List.map (detailedSecondMoraGroupings page) grouping.items
         ]
 
@@ -402,14 +408,14 @@ empty =
     text ""
 
 
-modalView : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-modalView selection =
+modalView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+modalView page selection =
     div
         [ class "modal-container" ]
         [ div [ class "modal-background", onClick CloseModal ] []
         , div
             [ class "modal" ]
-            [ activeRowView emptyModel.page selection ]
+            [ activeRowView page selection ]
         ]
 
 
@@ -422,7 +428,7 @@ pageView model =
                     div [] <|
                         ((gojuonThumbnailView gojuon)
                             ++ [ (Maybe.andThen (getVowelWiseGrouping gojuon) pageState.selection)
-                                    |> Maybe.map modalView
+                                    |> Maybe.map (modalView model.page)
                                     |> withDefault empty
                                ]
                         )

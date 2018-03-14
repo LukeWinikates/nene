@@ -95,7 +95,7 @@
              :top              "80px"
              :margin           "auto"
              :background-color "white"
-             :width            "800px"
+             :width            "1200px"
              :max-width        "80%"
              :border-radius    "5px"
              :box-shadow       "5px 5px 15px -1px #424242;"
