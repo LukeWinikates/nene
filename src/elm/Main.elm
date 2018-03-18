@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, header, input, section, span, strong, text)
+import Html exposing (Html, article, button, div, em, header, input, option, section, select, span, strong, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
@@ -271,7 +271,6 @@ wordView word =
     div [ class "card word-card" ]
         [ strong [] [ text word.kana ]
         , em [] [ text word.romaji ]
-        , button [ onClick (CloseWord word), class "hovers pull-right" ] [ text "x" ]
         , attestationIndicator word
         ]
 
@@ -288,18 +287,13 @@ setWord word page =
             Explorer { pageState | word = Just word }
 
 
-itemViewWithText : Page -> Word -> Html Msg
-itemViewWithText currentPage word =
+itemViewWithText : Word -> Html Msg
+itemViewWithText word =
     div
         [ classList
             [ ( "word-square", True )
             , (cssClassFromWord word)
             , ( "hovers", True )
-            , ( "active"
-              , case currentPage of
-                    Explorer pageState ->
-                        pageState.word == Just word
-              )
             ]
         , onClick (OpenWord word)
         ]
@@ -329,11 +323,11 @@ secondMoraGroupings consonantGroup =
         consonantGroup
 
 
-detailedSecondMoraGroupings : Page -> ConsonantWiseGrouping Word -> Html Msg
-detailedSecondMoraGroupings page consonantGroup =
+detailedSecondMoraGroupings : ConsonantWiseGrouping Word -> Html Msg
+detailedSecondMoraGroupings consonantGroup =
     innerConsonantGroupingView
         "select-grouping-word-row"
-        (itemViewWithText page)
+        itemViewWithText
         consonantGroup
 
 
@@ -367,8 +361,8 @@ thumbnailFirstConsonantGyoView consonantGroup =
             consonantGroup.items
 
 
-getVowelWiseGrouping : GitaigoByGojuonOrder -> Selection -> Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word))
-getVowelWiseGrouping gojuon selection =
+selectionToVowelWiseGrouping : GitaigoByGojuonOrder -> Selection -> Maybe (VowelWiseGrouping (ConsonantWiseGrouping Word))
+selectionToVowelWiseGrouping gojuon selection =
     gojuon
         |> List.filter (gyoEq selection.gyo)
         |> List.head
@@ -378,19 +372,47 @@ getVowelWiseGrouping gojuon selection =
         |> List.head
 
 
-activeRowView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-activeRowView page grouping =
+defaultWordFromVowelWiseGrouping : VowelWiseGrouping (ConsonantWiseGrouping Word) -> Maybe Word
+defaultWordFromVowelWiseGrouping vowelWiseGrouping =
+    vowelWiseGrouping
+        |> .items
+        |> List.head
+        |> Maybe.map .items
+        |> Maybe.andThen List.head
+        |> Maybe.map .items
+        |> Maybe.andThen List.head
+
+
+(||) : Maybe a -> Maybe a -> Maybe a
+(||) firstOption secondOption =
+    case firstOption of
+        Just _ ->
+            firstOption
+
+        Nothing ->
+            secondOption
+
+
+activeRowView : Maybe Word -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+activeRowView maybeWord grouping =
     article []
         [ header []
             [ text grouping.dan
             , (button [ onClick CloseModal, class "pull-right icon-button" ]) [ text "x" ]
             ]
-        , section [] <| List.map (detailedSecondMoraGroupings page) grouping.items
+        , section []
+            [ maybeWord
+                || defaultWordFromVowelWiseGrouping grouping
+                |> Maybe.map wordView
+                |> Maybe.withDefault empty
+            ]
+        , section [] <| List.map detailedSecondMoraGroupings grouping.items
         ]
 
 
 gojuonThumbnailView gojuon =
-    List.map (thumbnailFirstConsonantGyoView) gojuon
+    section [] <|
+        List.map (thumbnailFirstConsonantGyoView) gojuon
 
 
 cardsView : List Word -> Html Msg
@@ -408,14 +430,14 @@ empty =
     text ""
 
 
-modalView : Page -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
-modalView page selection =
+modalView : Maybe Word -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
+modalView maybeWord selection =
     div
         [ class "modal-container" ]
         [ div [ class "modal-background", onClick CloseModal ] []
         , div
             [ class "modal" ]
-            [ activeRowView page selection ]
+            [ activeRowView maybeWord selection ]
         ]
 
 
@@ -425,13 +447,13 @@ pageView model =
         Just gojuon ->
             case model.page of
                 Explorer pageState ->
-                    div [] <|
-                        ((gojuonThumbnailView gojuon)
-                            ++ [ (Maybe.andThen (getVowelWiseGrouping gojuon) pageState.selection)
-                                    |> Maybe.map (modalView model.page)
-                                    |> withDefault empty
-                               ]
-                        )
+                    div []
+                        [ gojuonThumbnailView gojuon
+                        , pageState.selection
+                            |> Maybe.andThen (selectionToVowelWiseGrouping gojuon)
+                            |> Maybe.map (modalView pageState.word)
+                            |> withDefault empty
+                        ]
 
         Nothing ->
             text "waiting for data to load..."
