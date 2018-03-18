@@ -1,5 +1,6 @@
 (ns nene.views.styles
-  (:require [nene.views.styles.banner :as banner]))
+  (:require [nene.views.styles.banner :as banner]
+            [garden.stylesheet]))
 
 (def gold "#B4833C")
 (def tropical-blue-green "#037064")
@@ -91,21 +92,25 @@
                         :position         "absolute"
                         }]
    [:.modal {
-             :position         "relative"
-             :top              "80px"
-             :margin           "auto"
-             :background-color "white"
-             :width            "1200px"
-             :max-width        "80%"
-             :border-radius    "5px"
-             :box-shadow       "5px 5px 15px -1px #424242;"
-             :padding          "15px"
+             :position           "relative"
+             :top                "80px"
+             :animation-duration "0.7s"
+             :animation-name     "slideup"
+             :margin             "auto"
+             :background-color   "white"
+             :width              "1200px"
+             :max-width          "80%"
+             :border-radius      "5px"
+             :box-shadow         "5px 5px 15px -1px #424242;"
+             :padding            "15px"
              }
-    [:header {:font-weight "bold" :font-size "14px"}]
-    ]
-   [:.icon-button { :cursor "pointer" :border "none" }
-    [:&:focus { :outline "none"}]
-    [:&:hover { :text-decoration "underline" }]]
+    [:header {:font-weight "bold" :font-size "14px"}]]
+   [(garden.stylesheet/at-keyframes "slideup"
+                                    [:from {:top "100vh"}]
+                                    [:to {:top "80px"}])]
+   [:.icon-button {:cursor "pointer" :border "none"}
+    [:&:focus {:outline "none"}]
+    [:&:hover {:text-decoration "underline"}]]
 
    (map (fn [[a c]] [(symbol (str "." a)) {:background-color c}]) attestation-color-map)
    [:.dictionary-word {:color lumber}]

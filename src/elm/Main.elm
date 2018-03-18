@@ -8,9 +8,7 @@ import Dict
 import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
-
--- TODO: instead of the animated fullscreen treatment, do a slide-up card version?
--- TODO: slide-up animation
+-- TODO: search/quickadd box
 -- TODO: don't allow background to scroll when modal open
 -- TODO: change view to show more detailed word cards (instead of just the kana)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
