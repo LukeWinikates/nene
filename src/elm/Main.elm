@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, article, button, div, em, header, input, option, section, select, span, strong, text)
+import Html exposing (Attribute, Html, article, button, div, em, header, input, li, option, section, select, span, strong, text, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
@@ -8,7 +8,7 @@ import Dict
 import Maybe exposing (withDefault)
 import Ajax exposing (..)
 
--- TODO: search/quickadd box
+
 -- TODO: don't allow background to scroll when modal open
 -- TODO: change view to show more detailed word cards (instead of just the kana)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
@@ -81,6 +81,7 @@ type alias Model =
     { notificationText : Maybe String
     , gojuon : Maybe GitaigoByGojuonOrder
     , page : Page
+    , search : Maybe String
     }
 
 
@@ -89,6 +90,7 @@ emptyModel =
     { notificationText = Nothing
     , gojuon = Nothing
     , page = Explorer defaultPageState
+    , search = Nothing
     }
 
 
@@ -104,6 +106,7 @@ type Msg
     | CloseWord Word
     | OpenWord Word
     | CloseModal
+    | SearchTerm String
 
 
 closeWord : Page -> Page
@@ -135,6 +138,27 @@ replaceIf pred f list =
                 a
         )
         list
+
+
+words : GitaigoByGojuonOrder -> List Word
+words gojuon =
+    gojuon
+        |> List.concatMap .items
+        |> List.concatMap .items
+        |> List.concatMap .items
+        |> List.concatMap .items
+
+
+wordContains : String -> Word -> Bool
+wordContains text word =
+    String.contains text word.kana || String.contains (String.toLower text) word.romaji
+
+
+findWords : GitaigoByGojuonOrder -> String -> List Word
+findWords gojuon searchTerm =
+    words gojuon
+        |> List.filter (wordContains searchTerm)
+        |> List.take 5
 
 
 attest : Model -> Word -> Attestation -> Model
@@ -207,6 +231,16 @@ update msg model =
 
         CloseModal ->
             { model | page = Explorer defaultPageState }
+                |> noCommand
+
+        SearchTerm term ->
+            { model
+                | search =
+                    if term /= "" then
+                        Just term
+                    else
+                        Nothing
+            }
                 |> noCommand
 
         Attesting e ->
@@ -381,8 +415,8 @@ defaultWordFromVowelWiseGrouping vowelWiseGrouping =
         |> Maybe.andThen List.head
 
 
-(||) : Maybe a -> Maybe a -> Maybe a
-(||) firstOption secondOption =
+(|:|) : Maybe a -> Maybe a -> Maybe a
+(|:|) firstOption secondOption =
     case firstOption of
         Just _ ->
             firstOption
@@ -400,7 +434,7 @@ activeRowView maybeWord grouping =
             ]
         , section []
             [ maybeWord
-                || defaultWordFromVowelWiseGrouping grouping
+                |:| defaultWordFromVowelWiseGrouping grouping
                 |> Maybe.map wordView
                 |> Maybe.withDefault empty
             ]
@@ -426,6 +460,18 @@ classes =
 
 empty =
     text ""
+
+
+searchBox : Maybe GitaigoByGojuonOrder -> Maybe String -> Html Msg
+searchBox maybeGojuon searchTerm =
+    div [ class "search-box" ]
+        [ input [ value (searchTerm |> Maybe.withDefault ""), onInput SearchTerm ] []
+        , section [ class "search-results" ] <|
+            List.map wordView
+                (Maybe.map2 findWords maybeGojuon searchTerm
+                    |> Maybe.withDefault []
+                )
+        ]
 
 
 modalView : Maybe Word -> VowelWiseGrouping (ConsonantWiseGrouping Word) -> Html Msg
@@ -460,5 +506,6 @@ pageView model =
 view model =
     div []
         [ div [] [ text <| Maybe.withDefault "" model.notificationText ]
+        , searchBox model.gojuon model.search
         , pageView (model)
         ]

@@ -71,10 +71,11 @@
                                 :display   "inline-block"
                                 :font-size "12px"}]
 
-   [:.card {:border        "1px solid #555"
-            :border-radius "2px"
-            :padding       "10px"
-            :margin        "5px"}]
+   [:.card {:border           "1px solid #555"
+            :border-radius    "2px"
+            :padding          "10px"
+            :margin           "5px"
+            :background-color "white"}]
    [:.word-card {:font-size "16px"}]
    [:.pull-right {:float "right"}]
    [:.modal-container {
@@ -116,5 +117,10 @@
    [:.dictionary-word {:color lumber}]
    banner/styles
    [:.selected {:background-color "gold" :width "100%" :height "50vh"}]
+   [:.search-box {:position "absolute"
+                  :top      "40px"
+                  :right    "40px"
+                  :width    "300px"}
+    ]
    ]
   )
