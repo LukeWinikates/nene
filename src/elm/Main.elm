@@ -10,6 +10,9 @@ import Ajax exposing (..)
 
 
 -- TODO: don't allow background to scroll when modal open
+-- TODO: fix the performance issue with the searchbox
+-- TODO: support rendaku (さめざめ)
+-- TODO: support っ between the mora, like あっぷあっぷ
 -- TODO: change view to show more detailed word cards (instead of just the kana)
 -- TODO: instead of gyo + dan headers, show あ＿　or き＿ as the labels
 -- TODO: these should probably indicate what their parent is, e.g. they're all: あ＿あ＿ or げ＿げ＿
